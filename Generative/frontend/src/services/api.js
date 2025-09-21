@@ -208,10 +208,10 @@ export const careerAPI = {
     }
   },
 
-  // Enhanced Gemini AI endpoints
+ // Enhanced AI endpoints
   suggestSkills: async (query, maxSuggestions = 8) => {
     try {
-      const response = await api.post('/gemini/suggest-skills', {
+      const response = await api.post('/ai/suggest-skills', {
         query,
         max_suggestions: maxSuggestions
       });
@@ -222,9 +222,9 @@ export const careerAPI = {
     }
   },
 
-  enhanceAnalysisWithGemini: async (skills, expertise, preferences = {}) => {
+  enhanceAnalysisWithAI: async (skills, expertise, preferences = {}) => {
     try {
-      const response = await api.post('/gemini/enhance-analysis', {
+      const response = await api.post('/ai/enhance-analysis', {
         skills,
         expertise,
         preferences
@@ -238,7 +238,7 @@ export const careerAPI = {
 
   getSupportedTechnologies: async () => {
     try {
-      const response = await api.get('/gemini/supported-technologies');
+      const response = await api.get('/ai/supported-technologies');
       return response.data;
     } catch (error) {
       console.error('Supported technologies error:', error);

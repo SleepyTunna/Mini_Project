@@ -12,8 +12,7 @@ const Navbar = () => {
     { path: '/dashboard', label: 'Dashboard', icon: 'fa-chart-pie' },
     { path: '/career-path', label: 'Career Paths', icon: 'fa-road' },
     { path: '/roadmap', label: 'Roadmap', icon: 'fa-map' },
-    { path: '/courses', label: 'Courses', icon: 'fa-graduation-cap' },
-    { path: '/settings', label: 'Settings', icon: 'fa-cog' },
+    { path: '/courses', label: 'Courses', icon: 'fa-graduation-cap' }
   ];
 
   return (

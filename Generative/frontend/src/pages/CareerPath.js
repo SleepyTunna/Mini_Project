@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useAppContext } from '../context/AppContext';
 
 const CareerPath = () => {
-  const { analysisResult, isLoading } = useAppContext();
+  const { analysisResult, isLoading, currentSkills, currentExpertise } = useAppContext();
 
   // Loading state
   if (isLoading) {
@@ -47,9 +47,17 @@ const CareerPath = () => {
   return (
     <div className="min-h-screen pt-16 bg-gray-50 dark:bg-gray-900">
       <div className="container mx-auto px-4 py-8">
-        <div className="mb-8">
+        <div className="mb-8 wavy-background">
+          <div className="floating-elements">
+            <div className="float-1"></div>
+            <div className="float-2"></div>
+            <div className="float-3"></div>
+          </div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Career Paths</h1>
-          <p className="text-gray-600 dark:text-gray-300">Explore all recommended career options for you</p>
+          <p className="text-gray-600 dark:text-gray-300">Explore career options for your skills: <span className="font-semibold text-indigo-600">{currentSkills || 'All Technologies'}</span></p>
+          {currentExpertise && (
+            <p className="text-gray-500 dark:text-gray-400 text-sm mt-1">Experience Level: {currentExpertise}</p>
+          )}
         </div>
 
         {/* Selected Career Path - Featured */}
@@ -98,7 +106,7 @@ const CareerPath = () => {
         {/* All Career Paths */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {analysisResult.career_paths.map((path, index) => (
-            <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-xl transition-shadow">
+            <div key={index} className="enhanced-card rounded-lg shadow hover:shadow-xl transition-shadow">
               <div className="p-6">
                 <div className="flex items-center mb-4">
                   <div className="w-10 h-10 bg-primary-100 dark:bg-primary-900/30 rounded-lg flex items-center justify-center mr-3">
@@ -108,7 +116,7 @@ const CareerPath = () => {
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white">{path.title}</h3>
                     {analysisResult.career_paths[0] && path.title === analysisResult.career_paths[0].title && (
                       <span className="text-xs bg-primary-100 dark:bg-primary-900/30 text-primary-800 dark:text-primary-200 px-2 py-1 rounded-full">
-                        Recommended
+                        Recommended for {currentSkills ? currentSkills.split(',')[0].trim() : 'Your Skills'}
                       </span>
                     )}
                   </div>

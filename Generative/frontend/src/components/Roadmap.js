@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
+import { useAppContext } from '../context/AppContext';
 
 const Roadmap = () => {
   const [showYouTubeVideos, setShowYouTubeVideos] = useState(false);
   const [youtubeVideos, setYoutubeVideos] = useState([]);
   const [loadingVideos, setLoadingVideos] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('programming');
+  
+  // Get user context to access their skills
+  const { user, analysisResult, currentSkills, currentExpertise } = useAppContext();
 
   // Enhanced search categories for better YouTube results
   const searchCategories = {
@@ -104,12 +108,25 @@ const Roadmap = () => {
     return demoData[category] || demoData.programming;
   };
 
-  // Enhanced function to search YouTube videos with category support
-  const searchYouTubeVideos = async (category = 'programming') => {
+  // Enhanced function to search YouTube videos based on user's actual skills
+  const searchYouTubeVideos = async (category = 'programming', userSkills = '') => {
     setLoadingVideos(true);
     setSelectedCategory(category);
     
-    const searchTerm = searchCategories[category] || searchCategories.programming;
+    // Create search term based on user's actual skills or category
+    let searchTerm;
+    if (userSkills && userSkills.trim()) {
+      // Use user's actual skills for more relevant results
+      searchTerm = userSkills.split(',').slice(0, 3).join(' ').trim();
+    } else if (analysisResult && analysisResult.skills) {
+      // Use skills from analysis result if available
+      searchTerm = analysisResult.skills.split(',').slice(0, 3).join(' ').trim();
+    } else {
+      // Fallback to category-based search
+      searchTerm = searchCategories[category] || searchCategories.programming;
+    }
+    
+    console.log('Searching YouTube for:', searchTerm);
     
     try {
       const response = await fetch(`https://abhi-api.vercel.app/api/search/yts?text=${encodeURIComponent(searchTerm)}`, {
@@ -125,6 +142,7 @@ const Roadmap = () => {
             .filter(video => video.title && video.title.length > 10) // Filter out short titles
             .slice(0, 9); // Get more videos (9 instead of 6)
           
+          console.log('Found YouTube videos:', filteredVideos.length);
           setYoutubeVideos(filteredVideos);
           setShowYouTubeVideos(true);
           return;
@@ -199,20 +217,28 @@ const Roadmap = () => {
   ];
 
   return (
-    <section className="py-16 bg-gray-50">
+    <section className="py-16 bg-gray-50 wavy-background">
+      <div className="floating-elements">
+        <div className="float-1"></div>
+        <div className="float-2"></div>
+        <div className="float-3"></div>
+      </div>
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-4xl font-bold mb-4 text-gray-900">Your Career Journey</h2>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Follow our proven roadmap to accelerate your career growth
+            Follow our proven roadmap to accelerate your career growth in <span className="font-semibold text-indigo-600">{currentSkills ? currentSkills.split(',')[0].trim() : 'your chosen field'}</span>
           </p>
+          {currentExpertise && (
+            <p className="text-gray-500 mt-2">Tailored for {currentExpertise} level professionals</p>
+          )}
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {roadmapSteps.map((step, index) => (
             <div 
               key={step.id}
-              className={`bg-white rounded-lg p-6 shadow-lg transition-all duration-300 hover:shadow-xl border border-gray-100 ${
+              className={`enhanced-card rounded-lg p-6 shadow-lg transition-all duration-300 hover:shadow-xl border border-gray-100 ${
                 step.status === 'completed' ? 'border-l-4 border-green-500' : 
                 step.status === 'current' ? 'border-l-4 border-blue-500' : 
                 'border-l-4 border-gray-300'
@@ -222,23 +248,23 @@ const Roadmap = () => {
               <h3 className="text-xl font-semibold mb-3 text-gray-900">{step.title}</h3>
               <p className="text-gray-600 mb-4">{step.description}</p>
               
-              {/* Enhanced YouTube Integration with Categories */}
+              {/* Enhanced YouTube Integration with User Skills */}
               {step.isYouTube && (
                 <div className="mb-4 space-y-3">
                   <div className="grid grid-cols-2 gap-2">
                     <button
-                      onClick={() => searchYouTubeVideos('programming')}
+                      onClick={() => searchYouTubeVideos('programming', analysisResult?.skills || user?.skills)}
                       disabled={loadingVideos}
                       className="bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-3 py-2 rounded-lg flex items-center justify-center space-x-1 transition-colors duration-200 text-sm"
                     >
                       <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
                       </svg>
-                      <span>{loadingVideos ? 'Loading...' : 'Programming'}</span>
+                      <span>{loadingVideos ? 'Loading...' : 'Your Skills'}</span>
                     </button>
                     
                     <button
-                      onClick={() => searchYouTubeVideos('frontend')}
+                      onClick={() => searchYouTubeVideos('frontend', analysisResult?.skills || user?.skills)}
                       disabled={loadingVideos}
                       className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-3 py-2 rounded-lg flex items-center justify-center space-x-1 transition-colors duration-200 text-sm"
                     >
@@ -251,7 +277,7 @@ const Roadmap = () => {
                   
                   <div className="grid grid-cols-2 gap-2">
                     <button
-                      onClick={() => searchYouTubeVideos('backend')}
+                      onClick={() => searchYouTubeVideos('backend', analysisResult?.skills || user?.skills)}
                       disabled={loadingVideos}
                       className="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white px-3 py-2 rounded-lg flex items-center justify-center space-x-1 transition-colors duration-200 text-sm"
                     >
@@ -262,7 +288,7 @@ const Roadmap = () => {
                     </button>
                     
                     <button
-                      onClick={() => searchYouTubeVideos('fullstack')}
+                      onClick={() => searchYouTubeVideos('fullstack', analysisResult?.skills || user?.skills)}
                       disabled={loadingVideos}
                       className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white px-3 py-2 rounded-lg flex items-center justify-center space-x-1 transition-colors duration-200 text-sm"
                     >
@@ -272,6 +298,12 @@ const Roadmap = () => {
                       <span>Full Stack</span>
                     </button>
                   </div>
+                  
+                  {(analysisResult?.skills || currentSkills || user?.skills) && (
+                    <div className="text-xs text-gray-600 mt-2">
+                      💡 Searching based on your skills: {(analysisResult?.skills || currentSkills || user?.skills)?.split(',').slice(0, 3).join(', ')}
+                    </div>
+                  )}
                 </div>
               )}
               <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${

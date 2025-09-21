@@ -59,18 +59,18 @@ const Dashboard = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div>
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Your Skills</h3>
-                <p className="text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">{user.skills}</p>
+                <p className="text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">{analysisResult.skills || user.skills}</p>
               </div>
               <div>
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">Experience Level</h3>
-                <p className="text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">{user.expertise}</p>
+                <p className="text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">{analysisResult.expertise || user.expertise}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Navigation Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-6 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {/* Career Paths Card */}
           <Link
             to="/career-path"
@@ -151,27 +151,6 @@ const Dashboard = () => {
               </p>
               <div className="text-purple-600 dark:text-purple-400 font-medium">
                 Take Test →
-              </div>
-            </div>
-          </Link>
-
-          {/* Settings Card */}
-          <Link
-            to="/settings"
-            className="bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
-          >
-            <div className="p-6">
-              <div className="flex items-center mb-4">
-                <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center mr-4">
-                  <span className="text-2xl">⚙️</span>
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 dark:text-white">Settings</h3>
-              </div>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">
-                Manage your profile, preferences, and application settings.
-              </p>
-              <div className="text-gray-600 dark:text-gray-400 font-medium">
-                View Settings →
               </div>
             </div>
           </Link>

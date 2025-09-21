@@ -7,104 +7,23 @@ const initialState = {
     id: 'user-123',
     email: 'john.smith@example.com',
     fullName: 'John Smith',
-    skills: 'Python, JavaScript, React, Node.js',
-    expertise: 'Intermediate'
+    skills: '',
+    expertise: 'Beginner'
   },
   isDarkMode: false,
-  analysisResult: {
-    career_paths: [
-      {
-        title: 'Full Stack Developer',
-        description: 'Develop both frontend and backend applications',
-        match_percentage: 85,
-        skills_required: ['React', 'Node.js', 'Python', 'Database Management'],
-        salary_range: '₹61,66,300 - ₹1,14,51,700',
-        growth_prospect: 'High - 22% job growth expected'
-      },
-      {
-        title: 'Frontend Developer',
-        description: 'Specialize in user interface development',
-        match_percentage: 90,
-        skills_required: ['React', 'JavaScript', 'CSS', 'UI/UX Design'],
-        salary_range: '₹52,85,400 - ₹96,89,900',
-        growth_prospect: 'High - 13% job growth expected'
-      },
-      {
-        title: 'Python Developer',
-        description: 'Focus on backend development and data processing',
-        match_percentage: 80,
-        skills_required: ['Python', 'Django', 'APIs', 'Database Design'],
-        salary_range: '₹57,25,850 - ₹1,10,11,250',
-        growth_prospect: 'Very High - 25% job growth expected'
-      }
-    ],
-    roadmap: [
-      {
-        step: 1,
-        title: 'Master React Fundamentals',
-        description: 'Deepen your React knowledge with advanced patterns',
-        duration: '2-3 months',
-        status: 'in-progress',
-        skills_required: ['React', 'JavaScript', 'JSX', 'State Management']
-      },
-      {
-        step: 2,
-        title: 'Learn TypeScript',
-        description: 'Add type safety to your JavaScript applications',
-        duration: '1-2 months',
-        status: 'pending',
-        skills_required: ['TypeScript', 'Type Definitions', 'Generics']
-      },
-      {
-        step: 3,
-        title: 'Build Portfolio Projects',
-        description: 'Create 3-5 impressive full-stack projects',
-        duration: '3-4 months',
-        status: 'pending',
-        skills_required: ['Project Management', 'Full-Stack Development', 'Version Control']
-      }
-    ],
-    courses: [
-      {
-        title: 'Advanced React Patterns',
-        provider: 'Tech Academy',
-        duration: '40 hours',
-        difficulty: 'Intermediate',
-        url: 'https://example.com/react-course'
-      },
-      {
-        title: 'TypeScript Masterclass',
-        provider: 'Code Institute',
-        duration: '25 hours',
-        difficulty: 'Beginner',
-        url: 'https://example.com/typescript-course'
-      },
-      {
-        title: 'Node.js Backend Development',
-        provider: 'Dev University',
-        duration: '60 hours',
-        difficulty: 'Intermediate',
-        url: 'https://example.com/nodejs-course'
-      }
-    ],
-    recent_activity: [
-      'Completed React Hooks tutorial',
-      'Started TypeScript basics course',
-      'Updated profile skills'
-    ],
-    progress: {
-      skills_mastery: 65,
-      learning_path: 40
-    }
-  },
-  isLoading: false
+  analysisResult: null,
+  isLoading: false,
+  currentSkills: '',
+  currentExpertise: 'Beginner'
 };
 
 // Action types
 const actionTypes = {
   SET_LOADING: 'SET_LOADING',
   SET_ANALYSIS_RESULT: 'SET_ANALYSIS_RESULT',
-  UPDATE_USER_SKILLS: 'UPDATE_USER_SKILLS'
+  UPDATE_USER_SKILLS: 'UPDATE_USER_SKILLS',
+  SET_CURRENT_SKILLS: 'SET_CURRENT_SKILLS',
+  SET_CURRENT_EXPERTISE: 'SET_CURRENT_EXPERTISE'
 };
 
 // Reducer
@@ -127,7 +46,18 @@ const appReducer = (state, action) => {
         user: {
           ...state.user,
           skills: action.payload
-        }
+        },
+        currentSkills: action.payload
+      };
+    case actionTypes.SET_CURRENT_SKILLS:
+      return {
+        ...state,
+        currentSkills: action.payload
+      };
+    case actionTypes.SET_CURRENT_EXPERTISE:
+      return {
+        ...state,
+        currentExpertise: action.payload
       };
     default:
       return state;
@@ -154,11 +84,21 @@ export const AppProvider = ({ children }) => {
     dispatch({ type: actionTypes.UPDATE_USER_SKILLS, payload: skills });
   };
 
+  const setCurrentSkills = (skills) => {
+    dispatch({ type: actionTypes.SET_CURRENT_SKILLS, payload: skills });
+  };
+
+  const setCurrentExpertise = (expertise) => {
+    dispatch({ type: actionTypes.SET_CURRENT_EXPERTISE, payload: expertise });
+  };
+
   const value = {
     ...state,
     setLoading,
     setAnalysisResult,
-    updateUserSkills
+    updateUserSkills,
+    setCurrentSkills,
+    setCurrentExpertise
   };
 
   return (
