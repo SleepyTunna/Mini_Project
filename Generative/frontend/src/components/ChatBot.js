@@ -115,7 +115,9 @@ What would you like to explore today?`,
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white p-4 rounded-t-xl flex justify-between items-center">
         <div className="flex items-center">
           <div className="w-8 h-8 bg-white bg-opacity-20 rounded-full flex items-center justify-center mr-3">
-            <i className="fas fa-robot"></i>
+            <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H9V3H7C5.9 3 5 3.9 5 5V7C5 8.1 5.9 9 7 9H8V16C8 17.1 8.9 18 10 18H14C15.1 18 16 17.1 16 16V9H17C18.1 9 19 8.1 19 7V5C19 3.9 18.1 3 17 3H15V1L21 7V9ZM13 16H11V11H13V16ZM15 7H9V5H15V7Z"/>
+            </svg>
           </div>
           <div>
             <p className="font-semibold">Career Mentor</p>
@@ -136,7 +138,9 @@ What would you like to explore today?`,
           >
             {message.sender === 'bot' && (
               <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center mr-2 flex-shrink-0 self-start">
-                <i className="fas fa-robot text-white text-sm"></i>
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H9V3H7C5.9 3 5 3.9 5 5V7C5 8.1 5.9 9 7 9H8V16C8 17.1 8.9 18 10 18H14C15.1 18 16 17.1 16 16V9H17C18.1 9 19 8.1 19 7V5C19 3.9 18.1 3 17 3H15V1L21 7V9ZM13 16H11V11H13V16ZM15 7H9V5H15V7Z"/>
+                </svg>
               </div>
             )}
             <div
@@ -152,7 +156,9 @@ What would you like to explore today?`,
             </div>
             {message.sender === 'user' && (
               <div className="w-8 h-8 bg-gray-400 rounded-full flex items-center justify-center ml-2 flex-shrink-0 self-start">
-                <i className="fas fa-user text-white text-sm"></i>
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 12C14.21 12 16 10.21 16 8C16 5.79 14.21 4 12 4C9.79 4 8 5.79 8 8C8 10.21 9.79 12 12 12ZM12 14C9.33 14 4 15.34 4 18V20H20V18C20 15.34 14.67 14 12 14Z"/>
+                </svg>
               </div>
             )}
           </div>
@@ -162,7 +168,9 @@ What would you like to explore today?`,
         {isTyping && (
           <div className="flex justify-start">
             <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center mr-2">
-              <i className="fas fa-robot text-white text-sm"></i>
+              <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 1H9V3H7C5.9 3 5 3.9 5 5V7C5 8.1 5.9 9 7 9H8V16C8 17.1 8.9 18 10 18H14C15.1 18 16 17.1 16 16V9H17C18.1 9 19 8.1 19 7V5C19 3.9 18.1 3 17 3H15V1L21 7V9ZM13 16H11V11H13V16ZM15 7H9V5H15V7Z"/>
+              </svg>
             </div>
             <div className="bg-white border border-gray-200 p-3 rounded-2xl rounded-bl-sm">
               <div className="flex space-x-1">
@@ -214,9 +222,13 @@ What would you like to explore today?`,
             className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-4 py-2 rounded-r-lg hover:from-indigo-700 hover:to-purple-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoading ? (
-              <i className="fas fa-spinner fa-spin"></i>
+              <svg className="w-5 h-5 animate-spin" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 2V6L16 2L12 2ZM12 18V22L8 18L12 18ZM4.93 4.93L7.76 7.76L6.34 9.17L3.51 6.34L4.93 4.93ZM16.24 16.24L19.07 19.07L17.66 20.48L14.83 17.65L16.24 16.24ZM2 12H6L2 8V12ZM18 12H22L18 16V12ZM4.93 19.07L7.76 16.24L9.17 17.66L6.34 20.49L4.93 19.07ZM16.24 7.76L19.07 4.93L20.48 6.34L17.65 9.17L16.24 7.76Z"/>
+              </svg>
             ) : (
-              <i className="fas fa-paper-plane"></i>
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M2,21L23,12L2,3V10L17,12L2,14V21Z"/>
+              </svg>
             )}
           </button>
         </div>
