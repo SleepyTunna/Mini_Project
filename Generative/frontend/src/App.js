@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from "./components/Navbar";
 import ChatBot from "./components/ChatBot";
@@ -11,23 +11,13 @@ import Settings from "./pages/Settings";
 import Landing from "./pages/Landing";
 import Roadmap from "./pages/Roadmap";
 import LogoShowcase from "./pages/LogoShowcase";
-import { AppProvider, useAppContext } from "./context/AppContext";
+import { AppProvider } from "./context/AppContext";
 
 function AppContent() {
   const [showChatBot, setShowChatBot] = useState(false);
-  const { isDarkMode } = useAppContext();
-
-  // Apply dark mode to document
-  useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDarkMode]);
 
   return (
-    <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors min-h-screen">
+    <div className="bg-white text-gray-900 transition-colors min-h-screen">
       <Navbar />
         
         <Routes>

@@ -208,6 +208,44 @@ export const careerAPI = {
     }
   },
 
+  // Enhanced Gemini AI endpoints
+  suggestSkills: async (query, maxSuggestions = 8) => {
+    try {
+      const response = await api.post('/gemini/suggest-skills', {
+        query,
+        max_suggestions: maxSuggestions
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Skill suggestion error:', error);
+      throw error;
+    }
+  },
+
+  enhanceAnalysisWithGemini: async (skills, expertise, preferences = {}) => {
+    try {
+      const response = await api.post('/gemini/enhance-analysis', {
+        skills,
+        expertise,
+        preferences
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Enhanced analysis error:', error);
+      throw error;
+    }
+  },
+
+  getSupportedTechnologies: async () => {
+    try {
+      const response = await api.get('/gemini/supported-technologies');
+      return response.data;
+    } catch (error) {
+      console.error('Supported technologies error:', error);
+      throw error;
+    }
+  },
+
   // Root endpoint
   getRoot: async () => {
     try {

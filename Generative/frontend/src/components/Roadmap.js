@@ -4,92 +4,142 @@ const Roadmap = () => {
   const [showYouTubeVideos, setShowYouTubeVideos] = useState(false);
   const [youtubeVideos, setYoutubeVideos] = useState([]);
   const [loadingVideos, setLoadingVideos] = useState(false);
+  const [selectedCategory, setSelectedCategory] = useState('programming');
 
-  // Function to search YouTube videos
-  const searchYouTubeVideos = async (searchTerm) => {
+  // Enhanced search categories for better YouTube results
+  const searchCategories = {
+    programming: 'programming tutorials web development',
+    frontend: 'frontend development react javascript css',
+    backend: 'backend development node.js python django',
+    fullstack: 'full stack development MERN MEAN tutorial',
+    datascience: 'data science machine learning python pandas',
+    mobile: 'mobile app development react native flutter',
+    devops: 'devops docker kubernetes ci cd deployment',
+    ai: 'artificial intelligence machine learning deep learning'
+  };
+
+  // Enhanced demo data with more realistic content
+  const getDemoVideos = (category) => {
+    const demoData = {
+      programming: [
+        {
+          title: "Complete Web Development Bootcamp 2024 - HTML, CSS, JavaScript, React",
+          channel: "The Complete Web Developer Course",
+          duration: "42:15:30",
+          views: "2.8M views",
+          thumbnail: "https://via.placeholder.com/320x180/FF0000/FFFFFF?text=Web+Dev+2024",
+          url: "https://youtube.com/watch?v=programming1"
+        },
+        {
+          title: "Python Programming Full Course - Learn Python in 12 Hours",
+          channel: "FreeCodeCamp",
+          duration: "12:08:42",
+          views: "15.2M views",
+          thumbnail: "https://via.placeholder.com/320x180/306998/FFFFFF?text=Python+Course",
+          url: "https://youtube.com/watch?v=programming2"
+        },
+        {
+          title: "JavaScript Crash Course For Beginners - Complete Tutorial",
+          channel: "Traversy Media",
+          duration: "1:40:17",
+          views: "4.1M views",
+          thumbnail: "https://via.placeholder.com/320x180/F7DF1E/000000?text=JavaScript",
+          url: "https://youtube.com/watch?v=programming3"
+        }
+      ],
+      frontend: [
+        {
+          title: "React.js Full Course 2024 - Build 4 Projects",
+          channel: "JavaScript Mastery",
+          duration: "8:25:43",
+          views: "3.2M views",
+          thumbnail: "https://via.placeholder.com/320x180/61DAFB/000000?text=React+2024",
+          url: "https://youtube.com/watch?v=frontend1"
+        },
+        {
+          title: "CSS Grid & Flexbox for Responsive Web Design",
+          channel: "Kevin Powell",
+          duration: "2:15:20",
+          views: "1.8M views",
+          thumbnail: "https://via.placeholder.com/320x180/1572B6/FFFFFF?text=CSS+Grid",
+          url: "https://youtube.com/watch?v=frontend2"
+        },
+        {
+          title: "Vue.js 3 Crash Course - Build a Complete App",
+          channel: "Net Ninja",
+          duration: "3:30:15",
+          views: "950K views",
+          thumbnail: "https://via.placeholder.com/320x180/4FC08D/FFFFFF?text=Vue.js+3",
+          url: "https://youtube.com/watch?v=frontend3"
+        }
+      ],
+      backend: [
+        {
+          title: "Node.js & Express.js Full Course - REST API Tutorial",
+          channel: "Programming with Mosh",
+          duration: "5:12:30",
+          views: "2.1M views",
+          thumbnail: "https://via.placeholder.com/320x180/339933/FFFFFF?text=Node.js+API",
+          url: "https://youtube.com/watch?v=backend1"
+        },
+        {
+          title: "Django Python Web Framework - Full Course for Beginners",
+          channel: "FreeCodeCamp",
+          duration: "4:20:17",
+          views: "1.9M views",
+          thumbnail: "https://via.placeholder.com/320x180/092E20/FFFFFF?text=Django+Course",
+          url: "https://youtube.com/watch?v=backend2"
+        },
+        {
+          title: "PostgreSQL Database Tutorial - Complete Course",
+          channel: "Database Star",
+          duration: "3:45:22",
+          views: "850K views",
+          thumbnail: "https://via.placeholder.com/320x180/336791/FFFFFF?text=PostgreSQL",
+          url: "https://youtube.com/watch?v=backend3"
+        }
+      ]
+    };
+    
+    return demoData[category] || demoData.programming;
+  };
+
+  // Enhanced function to search YouTube videos with category support
+  const searchYouTubeVideos = async (category = 'programming') => {
     setLoadingVideos(true);
+    setSelectedCategory(category);
+    
+    const searchTerm = searchCategories[category] || searchCategories.programming;
+    
     try {
       const response = await fetch(`https://abhi-api.vercel.app/api/search/yts?text=${encodeURIComponent(searchTerm)}`, {
-        timeout: 15000 // 15 second timeout
+        timeout: 10000 // 10 second timeout
       });
       
       if (response.ok) {
         const data = await response.json();
         
-        if (data && data.results) {
-          setYoutubeVideos(data.results.slice(0, 6)); // Get first 6 videos
+        if (data && data.results && data.results.length > 0) {
+          // Enhanced filtering and sorting
+          const filteredVideos = data.results
+            .filter(video => video.title && video.title.length > 10) // Filter out short titles
+            .slice(0, 9); // Get more videos (9 instead of 6)
+          
+          setYoutubeVideos(filteredVideos);
           setShowYouTubeVideos(true);
           return;
         }
       }
       
-      // Fallback to demo data if API fails
-      console.log('YouTube API unavailable, using demo data');
-      setYoutubeVideos([
-        {
-          title: "Complete Web Development Bootcamp 2024",
-          channel: "CodeWithMosh",
-          duration: "12:45:30",
-          views: "2.5M views",
-          thumbnail: "https://via.placeholder.com/320x180/FF0000/FFFFFF?text=YouTube+Video",
-          url: "https://youtube.com/watch?v=demo1"
-        },
-        {
-          title: "Python Programming Full Course",
-          channel: "FreeCodeCamp",
-          duration: "4:26:52",
-          views: "8.9M views",
-          thumbnail: "https://via.placeholder.com/320x180/FF0000/FFFFFF?text=Python+Course",
-          url: "https://youtube.com/watch?v=demo2"
-        },
-        {
-          title: "JavaScript Crash Course for Beginners",
-          channel: "Traversy Media",
-          duration: "1:40:17",
-          views: "3.2M views",
-          thumbnail: "https://via.placeholder.com/320x180/FF0000/FFFFFF?text=JavaScript",
-          url: "https://youtube.com/watch?v=demo3"
-        },
-        {
-          title: "React.js Tutorial for Beginners",
-          channel: "Programming with Mosh",
-          duration: "2:25:43",
-          views: "1.8M views",
-          thumbnail: "https://via.placeholder.com/320x180/FF0000/FFFFFF?text=React+Tutorial",
-          url: "https://youtube.com/watch?v=demo4"
-        },
-        {
-          title: "Data Structures and Algorithms",
-          channel: "CS Dojo",
-          duration: "3:15:20",
-          views: "5.1M views",
-          thumbnail: "https://via.placeholder.com/320x180/FF0000/FFFFFF?text=Data+Structures",
-          url: "https://youtube.com/watch?v=demo5"
-        },
-        {
-          title: "Full Stack Development with MERN",
-          channel: "Tech With Tim",
-          duration: "6:30:45",
-          views: "900K views",
-          thumbnail: "https://via.placeholder.com/320x180/FF0000/FFFFFF?text=MERN+Stack",
-          url: "https://youtube.com/watch?v=demo6"
-        }
-      ]);
+      // Enhanced fallback to category-specific demo data
+      console.log(`YouTube API unavailable for ${category}, using demo data`);
+      setYoutubeVideos(getDemoVideos(category));
       setShowYouTubeVideos(true);
       
     } catch (error) {
       console.error('Error fetching YouTube videos:', error);
-      // Show demo videos on error
-      setYoutubeVideos([
-        {
-          title: "Programming Tutorial - API Error Demo",
-          channel: "Demo Channel",
-          duration: "10:00",
-          views: "Demo views",
-          thumbnail: "https://via.placeholder.com/320x180/FF0000/FFFFFF?text=Demo+Video",
-          url: "#"
-        }
-      ]);
+      // Show category-specific demo videos on error
+      setYoutubeVideos(getDemoVideos(category));
       setShowYouTubeVideos(true);
     } finally {
       setLoadingVideos(false);
@@ -149,11 +199,11 @@ const Roadmap = () => {
   ];
 
   return (
-    <section className="py-16 bg-gray-50 dark:bg-gray-800">
+    <section className="py-16 bg-gray-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
-          <h2 className="text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100">Your Career Journey</h2>
-          <p className="text-xl text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+          <h2 className="text-4xl font-bold mb-4 text-gray-900">Your Career Journey</h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
             Follow our proven roadmap to accelerate your career growth
           </p>
         </div>
@@ -162,33 +212,72 @@ const Roadmap = () => {
           {roadmapSteps.map((step, index) => (
             <div 
               key={step.id}
-              className={`bg-white dark:bg-gray-700 rounded-lg p-6 shadow-lg transition-all duration-300 hover:shadow-xl border border-gray-100 dark:border-gray-600 ${
+              className={`bg-white rounded-lg p-6 shadow-lg transition-all duration-300 hover:shadow-xl border border-gray-100 ${
                 step.status === 'completed' ? 'border-l-4 border-green-500' : 
                 step.status === 'current' ? 'border-l-4 border-blue-500' : 
-                'border-l-4 border-gray-300 dark:border-gray-500'
+                'border-l-4 border-gray-300'
               }`}
             >
               <div className="text-4xl mb-4">{step.icon}</div>
-              <h3 className="text-xl font-semibold mb-3 text-gray-900 dark:text-gray-100">{step.title}</h3>
-              <p className="text-gray-600 dark:text-gray-300 mb-4">{step.description}</p>
+              <h3 className="text-xl font-semibold mb-3 text-gray-900">{step.title}</h3>
+              <p className="text-gray-600 mb-4">{step.description}</p>
               
-              {/* YouTube Integration Button */}
+              {/* Enhanced YouTube Integration with Categories */}
               {step.isYouTube && (
-                <button
-                  onClick={() => searchYouTubeVideos('programming tutorials web development')}
-                  disabled={loadingVideos}
-                  className="mb-4 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors duration-200"
-                >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-                  </svg>
-                  <span>{loadingVideos ? 'Loading...' : 'Find Study Videos'}</span>
-                </button>
+                <div className="mb-4 space-y-3">
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => searchYouTubeVideos('programming')}
+                      disabled={loadingVideos}
+                      className="bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-3 py-2 rounded-lg flex items-center justify-center space-x-1 transition-colors duration-200 text-sm"
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                      </svg>
+                      <span>{loadingVideos ? 'Loading...' : 'Programming'}</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => searchYouTubeVideos('frontend')}
+                      disabled={loadingVideos}
+                      className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-3 py-2 rounded-lg flex items-center justify-center space-x-1 transition-colors duration-200 text-sm"
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                      </svg>
+                      <span>Frontend</span>
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => searchYouTubeVideos('backend')}
+                      disabled={loadingVideos}
+                      className="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white px-3 py-2 rounded-lg flex items-center justify-center space-x-1 transition-colors duration-200 text-sm"
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
+                      </svg>
+                      <span>Backend</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => searchYouTubeVideos('fullstack')}
+                      disabled={loadingVideos}
+                      className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white px-3 py-2 rounded-lg flex items-center justify-center space-x-1 transition-colors duration-200 text-sm"
+                    >
+                      <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2L2 7v10c0 5.55 3.84 9.95 9 11 5.16-1.05 9-5.45 9-11V7l-10-5z"/>
+                      </svg>
+                      <span>Full Stack</span>
+                    </button>
+                  </div>
+                </div>
               )}
               <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
-                step.status === 'completed' ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' :
-                step.status === 'current' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300' :
-                'bg-gray-100 dark:bg-gray-600 text-gray-800 dark:text-gray-200'
+                step.status === 'completed' ? 'bg-green-100 text-green-800' :
+                step.status === 'current' ? 'bg-blue-100 text-blue-800' :
+                'bg-gray-100 text-gray-800'
               }`}>
                 {step.status === 'completed' ? '✓ Completed' :
                  step.status === 'current' ? '→ Current Step' :
@@ -202,13 +291,13 @@ const Roadmap = () => {
         {showYouTubeVideos && (
           <div className="mt-12">
             <div className="text-center mb-8">
-              <h3 className="text-3xl font-bold mb-4 text-gray-900 dark:text-gray-100">📺 Recommended Study Videos</h3>
-              <p className="text-lg text-gray-600 dark:text-gray-300">Curated YouTube content to accelerate your learning</p>
+              <h3 className="text-3xl font-bold mb-4 text-gray-900">📺 Recommended Study Videos - {selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}</h3>
+              <p className="text-lg text-gray-600">Curated YouTube content to accelerate your learning journey</p>
             </div>
             
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {youtubeVideos.map((video, index) => (
-                <div key={index} className="bg-white dark:bg-gray-700 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
+                <div key={index} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
                   <div className="relative">
                     <img 
                       src={video.thumbnail || 'https://via.placeholder.com/320x180?text=Video'} 
@@ -230,13 +319,13 @@ const Roadmap = () => {
                     </div>
                   </div>
                   <div className="p-4">
-                    <h4 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100 line-clamp-2">
+                    <h4 className="text-lg font-semibold mb-2 text-gray-900 line-clamp-2">
                       {video.title || 'Study Video'}
                     </h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+                    <p className="text-sm text-gray-600 mb-2">
                       {video.channel || 'Educational Channel'}
                     </p>
-                    <div className="flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+                    <div className="flex justify-between items-center text-xs text-gray-500">
                       <span>{video.duration || 'Duration not specified'}</span>
                       <span>{video.views || 'View count unavailable'}</span>
                     </div>

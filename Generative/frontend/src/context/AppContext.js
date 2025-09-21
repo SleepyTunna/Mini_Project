@@ -10,7 +10,7 @@ const initialState = {
     skills: 'Python, JavaScript, React, Node.js',
     expertise: 'Intermediate'
   },
-  isDarkMode: true,
+  isDarkMode: false,
   analysisResult: {
     career_paths: [
       {
@@ -104,8 +104,7 @@ const initialState = {
 const actionTypes = {
   SET_LOADING: 'SET_LOADING',
   SET_ANALYSIS_RESULT: 'SET_ANALYSIS_RESULT',
-  UPDATE_USER_SKILLS: 'UPDATE_USER_SKILLS',
-  TOGGLE_DARK_MODE: 'TOGGLE_DARK_MODE'
+  UPDATE_USER_SKILLS: 'UPDATE_USER_SKILLS'
 };
 
 // Reducer
@@ -129,11 +128,6 @@ const appReducer = (state, action) => {
           ...state.user,
           skills: action.payload
         }
-      };
-    case actionTypes.TOGGLE_DARK_MODE:
-      return {
-        ...state,
-        isDarkMode: !state.isDarkMode
       };
     default:
       return state;
@@ -160,16 +154,11 @@ export const AppProvider = ({ children }) => {
     dispatch({ type: actionTypes.UPDATE_USER_SKILLS, payload: skills });
   };
 
-  const toggleDarkMode = () => {
-    dispatch({ type: actionTypes.TOGGLE_DARK_MODE });
-  };
-
   const value = {
     ...state,
     setLoading,
     setAnalysisResult,
-    updateUserSkills,
-    toggleDarkMode
+    updateUserSkills
   };
 
   return (

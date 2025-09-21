@@ -552,21 +552,87 @@ Make this roadmap actionable, specific, and tailored to their current skill leve
         
         skills_lower = skills.lower()
         
-        # Determine primary domain based on skills
-        if any(skill in skills_lower for skill in ['python', 'javascript', 'java', 'programming', 'coding', 'react', 'node']):
-            primary_domain = 'software_development'
-        elif any(skill in skills_lower for skill in ['data', 'analytics', 'sql', 'pandas', 'statistics', 'machine learning']):
-            primary_domain = 'data_science'
-        elif any(skill in skills_lower for skill in ['design', 'ui', 'ux', 'photoshop', 'figma', 'adobe']):
-            primary_domain = 'design'
-        elif any(skill in skills_lower for skill in ['marketing', 'social media', 'seo', 'content', 'advertising']):
-            primary_domain = 'marketing'
-        elif any(skill in skills_lower for skill in ['project management', 'agile', 'scrum', 'leadership']):
-            primary_domain = 'project_management'
-        else:
-            primary_domain = 'general_tech'
+        # Enhanced domain detection with comprehensive skill mapping
+        skills_lower = skills.lower()
+        domain_keywords = {
+            'software_development': [
+                'programming', 'coding', 'software', 'web development', 'app development',
+                'python', 'javascript', 'java', 'c++', 'c#', 'php', 'ruby', 'go', 'rust', 'swift',
+                'react', 'vue', 'angular', 'node.js', 'django', 'flask', 'spring', 'laravel',
+                'frontend', 'backend', 'fullstack', 'full-stack', 'api', 'microservices'
+            ],
+            'data_science': [
+                'data science', 'data analysis', 'machine learning', 'artificial intelligence',
+                'deep learning', 'neural networks', 'statistics', 'analytics', 'big data',
+                'pandas', 'numpy', 'tensorflow', 'pytorch', 'scikit-learn', 'r', 'tableau',
+                'power bi', 'sql', 'data visualization', 'predictive modeling', 'nlp',
+                'computer vision', 'data mining', 'business intelligence'
+            ],
+            'mobile_development': [
+                'mobile', 'android', 'ios', 'react native', 'flutter', 'xamarin', 'ionic',
+                'swift', 'kotlin', 'objective-c', 'mobile app', 'app store', 'play store',
+                'mobile ui', 'responsive design', 'cross-platform'
+            ],
+            'game_development': [
+                'game development', 'unity', 'unreal engine', 'godot', 'game design',
+                'graphics programming', 'shader', '3d modeling', 'animation', 'blender',
+                'c++', 'c#', 'lua', 'gamemaker', 'indie game', 'aaa game'
+            ],
+            'devops_cloud': [
+                'devops', 'cloud', 'aws', 'azure', 'gcp', 'docker', 'kubernetes', 'terraform',
+                'ansible', 'jenkins', 'ci/cd', 'infrastructure', 'deployment', 'monitoring',
+                'microservices', 'containers', 'serverless', 'cloud architecture'
+            ],
+            'cybersecurity': [
+                'cybersecurity', 'security', 'penetration testing', 'ethical hacking',
+                'network security', 'information security', 'vulnerability assessment',
+                'security analysis', 'cryptography', 'firewall', 'malware analysis'
+            ],
+            'design_ux': [
+                'ui/ux', 'design', 'user experience', 'user interface', 'graphic design',
+                'web design', 'figma', 'sketch', 'adobe', 'photoshop', 'illustrator',
+                'wireframing', 'prototyping', 'design thinking', 'visual design'
+            ],
+            'business_analysis': [
+                'business analysis', 'product management', 'project management', 'scrum',
+                'agile', 'requirements analysis', 'stakeholder management', 'process improvement',
+                'business intelligence', 'market research', 'strategy'
+            ],
+            'digital_marketing': [
+                'digital marketing', 'seo', 'sem', 'social media', 'content marketing',
+                'email marketing', 'google analytics', 'facebook ads', 'google ads',
+                'marketing automation', 'lead generation', 'conversion optimization'
+            ],
+            'blockchain_web3': [
+                'blockchain', 'cryptocurrency', 'bitcoin', 'ethereum', 'smart contracts',
+                'defi', 'nft', 'web3', 'solidity', 'dapp', 'decentralized', 'crypto'
+            ],
+            'ai_ml_engineering': [
+                'ai engineering', 'ml engineering', 'mlops', 'model deployment',
+                'ai infrastructure', 'model optimization', 'edge ai', 'production ml',
+                'ai scalability', 'model monitoring'
+            ],
+            'quality_assurance': [
+                'qa', 'quality assurance', 'testing', 'test automation', 'selenium',
+                'cypress', 'jest', 'unit testing', 'integration testing', 'performance testing',
+                'manual testing', 'bug tracking', 'test planning'
+            ]
+        }
         
-        # Get domain-specific responses
+        # Determine primary domain based on comprehensive keyword matching
+        domain_scores = {}
+        for domain, keywords in domain_keywords.items():
+            score = sum(1 for keyword in keywords if keyword in skills_lower)
+            if score > 0:
+                domain_scores[domain] = score
+        
+        # Get the domain with highest keyword matches, default to software_development
+        if domain_scores:
+            primary_domain = max(domain_scores.keys(), key=lambda k: domain_scores[k])
+        else:
+            primary_domain = 'software_development'
+        
+        # Enhanced comprehensive domain responses for ALL career fields
         domain_responses = {
             'software_development': {
                 'career_paths': [
@@ -585,16 +651,16 @@ Make this roadmap actionable, specific, and tailored to their current skill leve
                         'growth_prospect': 'High - Technology sector continues to grow rapidly'
                     },
                     {
-                        'title': 'DevOps Engineer',
-                        'description': 'Bridge development and operations to streamline software delivery',
-                        'required_skills': ['Docker', 'Kubernetes', 'AWS/Cloud', 'CI/CD', 'Monitoring'],
-                        'salary_range': convert_usd_to_inr('$85,000 - $140,000'),
-                        'growth_prospect': 'Very High - Essential for modern software delivery'
+                        'title': 'Frontend Developer',
+                        'description': 'Create engaging user interfaces and experiences',
+                        'required_skills': ['HTML/CSS', 'JavaScript', 'React/Vue/Angular', 'Responsive Design'],
+                        'salary_range': convert_usd_to_inr('$65,000 - $120,000'),
+                        'growth_prospect': 'High - User experience is crucial for business success'
                     }
                 ],
                 'selected_path': {
                     'title': 'Full Stack Developer',
-                    'description': 'Based on your skills, becoming a Full Stack Developer offers the best opportunity to leverage your programming knowledge while building complete applications',
+                    'description': 'Based on your programming skills, becoming a Full Stack Developer offers the best opportunity to leverage your knowledge while building complete applications',
                     'required_skills': ['JavaScript', 'React', 'Node.js', 'Databases', 'Git', 'API Development'],
                     'salary_range': convert_usd_to_inr('$70,000 - $130,000'),
                     'growth_prospect': 'High - Full stack developers are highly sought after for their versatility'
@@ -630,6 +696,134 @@ Make this roadmap actionable, specific, and tailored to their current skill leve
                     'required_skills': ['Python', 'Statistics', 'Machine Learning', 'SQL', 'Data Visualization', 'Domain Expertise'],
                     'salary_range': convert_usd_to_inr('$90,000 - $160,000'),
                     'growth_prospect': 'Very High - Data science skills are in extremely high demand'
+                }
+            },
+            'mobile_development': {
+                'career_paths': [
+                    {
+                        'title': 'Mobile App Developer',
+                        'description': 'Create mobile applications for iOS and Android platforms',
+                        'required_skills': ['Swift/Kotlin', 'React Native/Flutter', 'Mobile UI/UX', 'API Integration'],
+                        'salary_range': convert_usd_to_inr('$75,000 - $135,000'),
+                        'growth_prospect': 'High - Mobile usage continues to grow globally'
+                    },
+                    {
+                        'title': 'iOS Developer',
+                        'description': 'Specialize in creating applications for Apple devices',
+                        'required_skills': ['Swift', 'Xcode', 'SwiftUI', 'Core Data', 'App Store Guidelines'],
+                        'salary_range': convert_usd_to_inr('$80,000 - $140,000'),
+                        'growth_prospect': 'High - iOS market has high revenue potential'
+                    },
+                    {
+                        'title': 'Android Developer',
+                        'description': 'Build applications for the Android ecosystem',
+                        'required_skills': ['Kotlin/Java', 'Android Studio', 'Jetpack Compose', 'Firebase'],
+                        'salary_range': convert_usd_to_inr('$70,000 - $130,000'),
+                        'growth_prospect': 'High - Largest mobile platform globally'
+                    }
+                ],
+                'selected_path': {
+                    'title': 'Mobile App Developer',
+                    'description': 'Your mobile development skills make you ideal for creating cross-platform applications',
+                    'required_skills': ['Cross-platform Development', 'Mobile UI/UX', 'App Store Optimization', 'Performance Optimization'],
+                    'salary_range': convert_usd_to_inr('$75,000 - $135,000'),
+                    'growth_prospect': 'High - Mobile-first approach is essential for modern businesses'
+                }
+            },
+            'devops_cloud': {
+                'career_paths': [
+                    {
+                        'title': 'DevOps Engineer',
+                        'description': 'Automate and optimize software delivery pipelines',
+                        'required_skills': ['Docker', 'Kubernetes', 'CI/CD', 'Infrastructure as Code', 'Monitoring'],
+                        'salary_range': convert_usd_to_inr('$85,000 - $140,000'),
+                        'growth_prospect': 'Very High - Critical for modern software delivery'
+                    },
+                    {
+                        'title': 'Cloud Architect',
+                        'description': 'Design and implement cloud infrastructure solutions',
+                        'required_skills': ['AWS/Azure/GCP', 'Architecture Design', 'Security', 'Cost Optimization'],
+                        'salary_range': convert_usd_to_inr('$110,000 - $180,000'),
+                        'growth_prospect': 'Very High - Cloud adoption is accelerating'
+                    },
+                    {
+                        'title': 'Site Reliability Engineer',
+                        'description': 'Ensure system reliability, performance, and scalability',
+                        'required_skills': ['System Administration', 'Monitoring', 'Incident Response', 'Automation'],
+                        'salary_range': convert_usd_to_inr('$95,000 - $160,000'),
+                        'growth_prospect': 'High - Reliability is crucial for digital services'
+                    }
+                ],
+                'selected_path': {
+                    'title': 'DevOps Engineer',
+                    'description': 'Your infrastructure and automation skills are perfect for streamlining software delivery',
+                    'required_skills': ['Containerization', 'Orchestration', 'CI/CD Pipelines', 'Cloud Platforms', 'Monitoring'],
+                    'salary_range': convert_usd_to_inr('$85,000 - $140,000'),
+                    'growth_prospect': 'Very High - DevOps practices are essential for competitive software delivery'
+                }
+            },
+            'cybersecurity': {
+                'career_paths': [
+                    {
+                        'title': 'Cybersecurity Analyst',
+                        'description': 'Monitor and protect systems from security threats',
+                        'required_skills': ['Network Security', 'Threat Analysis', 'SIEM Tools', 'Incident Response'],
+                        'salary_range': convert_usd_to_inr('$70,000 - $120,000'),
+                        'growth_prospect': 'Very High - Cyber threats are increasing rapidly'
+                    },
+                    {
+                        'title': 'Ethical Hacker',
+                        'description': 'Test systems for vulnerabilities through authorized penetration testing',
+                        'required_skills': ['Penetration Testing', 'Vulnerability Assessment', 'Security Tools', 'Compliance'],
+                        'salary_range': convert_usd_to_inr('$80,000 - $140,000'),
+                        'growth_prospect': 'Very High - Proactive security testing is essential'
+                    },
+                    {
+                        'title': 'Security Engineer',
+                        'description': 'Design and implement security systems and protocols',
+                        'required_skills': ['Security Architecture', 'Cryptography', 'Access Control', 'Risk Assessment'],
+                        'salary_range': convert_usd_to_inr('$90,000 - $150,000'),
+                        'growth_prospect': 'Very High - Security by design is critical'
+                    }
+                ],
+                'selected_path': {
+                    'title': 'Cybersecurity Analyst',
+                    'description': 'Your security knowledge makes you ideal for protecting organizations from cyber threats',
+                    'required_skills': ['Security Monitoring', 'Threat Detection', 'Incident Response', 'Security Frameworks'],
+                    'salary_range': convert_usd_to_inr('$70,000 - $120,000'),
+                    'growth_prospect': 'Very High - Cybersecurity is a top priority for all organizations'
+                }
+            },
+            'design_ux': {
+                'career_paths': [
+                    {
+                        'title': 'UX Designer',
+                        'description': 'Create intuitive and engaging user experiences',
+                        'required_skills': ['User Research', 'Wireframing', 'Prototyping', 'Usability Testing', 'Design Tools'],
+                        'salary_range': convert_usd_to_inr('$65,000 - $120,000'),
+                        'growth_prospect': 'High - User experience is crucial for product success'
+                    },
+                    {
+                        'title': 'UI Designer',
+                        'description': 'Design beautiful and functional user interfaces',
+                        'required_skills': ['Visual Design', 'Design Systems', 'Typography', 'Color Theory', 'Design Tools'],
+                        'salary_range': convert_usd_to_inr('$60,000 - $110,000'),
+                        'growth_prospect': 'High - Visual design skills are always in demand'
+                    },
+                    {
+                        'title': 'Product Designer',
+                        'description': 'Lead design strategy for digital products',
+                        'required_skills': ['Product Strategy', 'User Research', 'Design Leadership', 'Cross-functional Collaboration'],
+                        'salary_range': convert_usd_to_inr('$80,000 - $140,000'),
+                        'growth_prospect': 'High - Product-focused design is essential for business success'
+                    }
+                ],
+                'selected_path': {
+                    'title': 'UX Designer',
+                    'description': 'Your design skills are perfect for creating user-centered digital experiences',
+                    'required_skills': ['User Research', 'Design Thinking', 'Prototyping', 'User Testing', 'Collaboration'],
+                    'salary_range': convert_usd_to_inr('$65,000 - $120,000'),
+                    'growth_prospect': 'High - Great UX is essential for digital product success'
                 }
             }
         }
@@ -1172,78 +1366,299 @@ Make this roadmap actionable, specific, and tailored to their current skill leve
         return self._extract_skills_fallback(message)
     
     def _extract_skills_fallback(self, message: str) -> Dict[str, Any]:
-        """Fallback skill extraction when AI is not available"""
-        # Common technical skills and tools to look for
+        """Enhanced fallback skill extraction supporting ALL programming languages and skills"""
+        # Comprehensive technical skills and tools database
         skill_patterns = {
-            # Programming Languages
+            # Programming Languages (ALL major languages)
             'python': 'Python',
             'javascript': 'JavaScript',
             'java': 'Java',
             'c#': 'C#',
+            'csharp': 'C#',
             'c++': 'C++',
+            'cpp': 'C++',
+            'c': 'C',
             'typescript': 'TypeScript',
             'php': 'PHP',
             'ruby': 'Ruby',
             'go': 'Go',
+            'golang': 'Go',
             'rust': 'Rust',
             'swift': 'Swift',
             'kotlin': 'Kotlin',
+            'scala': 'Scala',
+            'r': 'R',
+            'matlab': 'MATLAB',
+            'perl': 'Perl',
+            'bash': 'Bash',
+            'shell': 'Shell Scripting',
+            'powershell': 'PowerShell',
+            'lua': 'Lua',
+            'dart': 'Dart',
+            'objective-c': 'Objective-C',
+            'assembly': 'Assembly',
+            'fortran': 'Fortran',
+            'cobol': 'COBOL',
+            'haskell': 'Haskell',
+            'erlang': 'Erlang',
+            'elixir': 'Elixir',
+            'clojure': 'Clojure',
+            'f#': 'F#',
+            'vb.net': 'VB.NET',
+            'solidity': 'Solidity',
+            'julia': 'Julia',
+            'nim': 'Nim',
+            'crystal': 'Crystal',
+            'zig': 'Zig',
             
-            # Frontend Technologies
+            # Frontend Technologies & Frameworks
+            'html': 'HTML',
+            'html5': 'HTML5',
+            'css': 'CSS',
+            'css3': 'CSS3',
+            'sass': 'SASS',
+            'scss': 'SCSS',
+            'less': 'LESS',
+            'bootstrap': 'Bootstrap',
+            'tailwind': 'Tailwind CSS',
+            'bulma': 'Bulma',
+            'materialize': 'Materialize',
+            'foundation': 'Foundation',
             'react': 'React',
             'vue': 'Vue.js',
             'angular': 'Angular',
-            'html': 'HTML',
-            'css': 'CSS',
-            'bootstrap': 'Bootstrap',
-            'tailwind': 'Tailwind CSS',
-            'sass': 'SASS',
+            'svelte': 'Svelte',
+            'ember': 'Ember.js',
+            'backbone': 'Backbone.js',
             'jquery': 'jQuery',
+            'alpine': 'Alpine.js',
+            'stimulus': 'Stimulus',
+            'lit': 'Lit',
+            'web components': 'Web Components',
+            'pwa': 'Progressive Web Apps',
             
-            # Backend Technologies
+            # Backend Technologies & Frameworks
             'node.js': 'Node.js',
             'nodejs': 'Node.js',
             'express': 'Express.js',
+            'fastify': 'Fastify',
+            'koa': 'Koa.js',
+            'nest': 'NestJS',
             'django': 'Django',
             'flask': 'Flask',
-            'spring': 'Spring',
+            'fastapi': 'FastAPI',
+            'pyramid': 'Pyramid',
+            'tornado': 'Tornado',
+            'spring': 'Spring Framework',
+            'spring boot': 'Spring Boot',
             'laravel': 'Laravel',
+            'symfony': 'Symfony',
+            'codeigniter': 'CodeIgniter',
             'rails': 'Ruby on Rails',
+            'sinatra': 'Sinatra',
+            'gin': 'Gin',
+            'echo': 'Echo',
+            'fiber': 'Fiber',
+            'asp.net': 'ASP.NET',
+            'asp.net core': 'ASP.NET Core',
+            'blazor': 'Blazor',
+            'actix': 'Actix Web',
+            'rocket': 'Rocket',
+            'vapor': 'Vapor',
             
-            # Databases
+            # Mobile Development
+            'react native': 'React Native',
+            'flutter': 'Flutter',
+            'ionic': 'Ionic',
+            'cordova': 'Apache Cordova',
+            'phonegap': 'PhoneGap',
+            'xamarin': 'Xamarin',
+            'android': 'Android Development',
+            'ios': 'iOS Development',
+            'swift ui': 'SwiftUI',
+            'uikit': 'UIKit',
+            'android studio': 'Android Studio',
+            'xcode': 'Xcode',
+            
+            # Databases & Data Storage
             'sql': 'SQL',
             'mysql': 'MySQL',
             'postgresql': 'PostgreSQL',
-            'mongodb': 'MongoDB',
             'sqlite': 'SQLite',
+            'mariadb': 'MariaDB',
+            'oracle': 'Oracle Database',
+            'sql server': 'SQL Server',
+            'mongodb': 'MongoDB',
+            'couchdb': 'CouchDB',
             'redis': 'Redis',
+            'elasticsearch': 'Elasticsearch',
+            'cassandra': 'Cassandra',
+            'dynamodb': 'DynamoDB',
             'firestore': 'Firestore',
+            'neo4j': 'Neo4j',
+            'influxdb': 'InfluxDB',
+            'timescaledb': 'TimescaleDB',
             
-            # DevOps and Tools
+            # DevOps & Infrastructure
             'docker': 'Docker',
             'kubernetes': 'Kubernetes',
-            'aws': 'AWS',
-            'azure': 'Azure',
-            'gcp': 'Google Cloud Platform',
-            'git': 'Git',
-            'jenkins': 'Jenkins',
+            'helm': 'Helm',
             'terraform': 'Terraform',
+            'ansible': 'Ansible',
+            'puppet': 'Puppet',
+            'chef': 'Chef',
+            'vagrant': 'Vagrant',
+            'jenkins': 'Jenkins',
+            'gitlab ci': 'GitLab CI',
+            'github actions': 'GitHub Actions',
+            'circleci': 'CircleCI',
+            'travis ci': 'Travis CI',
+            'aws': 'Amazon Web Services',
+            'azure': 'Microsoft Azure',
+            'gcp': 'Google Cloud Platform',
+            'digitalocean': 'DigitalOcean',
+            'heroku': 'Heroku',
+            'vercel': 'Vercel',
+            'netlify': 'Netlify',
             
-            # Machine Learning / AI
+            # Machine Learning & AI
             'machine learning': 'Machine Learning',
+            'artificial intelligence': 'Artificial Intelligence',
+            'deep learning': 'Deep Learning',
+            'neural networks': 'Neural Networks',
             'tensorflow': 'TensorFlow',
             'pytorch': 'PyTorch',
+            'keras': 'Keras',
+            'scikit-learn': 'Scikit-learn',
             'pandas': 'Pandas',
             'numpy': 'NumPy',
-            'scikit-learn': 'Scikit-learn',
+            'opencv': 'OpenCV',
+            'nlp': 'Natural Language Processing',
+            'computer vision': 'Computer Vision',
+            'hugging face': 'Hugging Face',
+            'transformers': 'Transformers',
+            'langchain': 'LangChain',
+            'openai': 'OpenAI',
+            'spacy': 'spaCy',
+            'nltk': 'NLTK',
             
-            # Other
+            # Data Science & Analytics
+            'data science': 'Data Science',
+            'data analysis': 'Data Analysis',
+            'data visualization': 'Data Visualization',
+            'tableau': 'Tableau',
+            'power bi': 'Power BI',
+            'looker': 'Looker',
+            'jupyter': 'Jupyter',
+            'anaconda': 'Anaconda',
+            'spark': 'Apache Spark',
+            'hadoop': 'Hadoop',
+            'kafka': 'Apache Kafka',
+            'airflow': 'Apache Airflow',
+            'dbt': 'dbt',
+            
+            # Game Development
+            'unity': 'Unity',
+            'unreal engine': 'Unreal Engine',
+            'godot': 'Godot',
+            'blender': 'Blender',
+            'game development': 'Game Development',
+            'gamemaker': 'GameMaker Studio',
+            
+            # Design & Creative
+            'ui/ux': 'UI/UX Design',
+            'figma': 'Figma',
+            'sketch': 'Sketch',
+            'adobe xd': 'Adobe XD',
+            'photoshop': 'Adobe Photoshop',
+            'illustrator': 'Adobe Illustrator',
+            'after effects': 'After Effects',
+            'premiere pro': 'Premiere Pro',
+            
+            # Version Control & Collaboration
+            'git': 'Git',
+            'github': 'GitHub',
+            'gitlab': 'GitLab',
+            'bitbucket': 'Bitbucket',
+            'svn': 'Subversion',
+            'mercurial': 'Mercurial',
+            
+            # Testing & Quality Assurance
+            'testing': 'Software Testing',
+            'unit testing': 'Unit Testing',
+            'integration testing': 'Integration Testing',
+            'jest': 'Jest',
+            'mocha': 'Mocha',
+            'pytest': 'Pytest',
+            'junit': 'JUnit',
+            'selenium': 'Selenium',
+            'cypress': 'Cypress',
+            'playwright': 'Playwright',
+            'postman': 'Postman',
+            
+            # API & Integration
             'api': 'API Development',
             'rest': 'REST APIs',
+            'restful': 'RESTful APIs',
             'graphql': 'GraphQL',
+            'soap': 'SOAP',
+            'grpc': 'gRPC',
+            'webhook': 'Webhooks',
             'microservices': 'Microservices',
-            'agile': 'Agile',
-            'scrum': 'Scrum'
+            'soa': 'Service-Oriented Architecture',
+            
+            # Soft Skills & Methodologies
+            'agile': 'Agile Methodology',
+            'scrum': 'Scrum',
+            'kanban': 'Kanban',
+            'lean': 'Lean Development',
+            'tdd': 'Test-Driven Development',
+            'bdd': 'Behavior-Driven Development',
+            'project management': 'Project Management',
+            'leadership': 'Leadership',
+            'communication': 'Communication Skills',
+            'problem solving': 'Problem Solving',
+            'teamwork': 'Teamwork',
+            
+            # Security & Networking
+            'cybersecurity': 'Cybersecurity',
+            'penetration testing': 'Penetration Testing',
+            'ethical hacking': 'Ethical Hacking',
+            'networking': 'Computer Networking',
+            'tcp/ip': 'TCP/IP',
+            'vpn': 'VPN',
+            'firewall': 'Firewall Management',
+            'ssl/tls': 'SSL/TLS',
+            
+            # Blockchain & Cryptocurrency
+            'blockchain': 'Blockchain Technology',
+            'ethereum': 'Ethereum',
+            'bitcoin': 'Bitcoin',
+            'smart contracts': 'Smart Contracts',
+            'defi': 'Decentralized Finance',
+            'nft': 'NFT Development',
+            'web3': 'Web3 Development',
+            
+            # Emerging Technologies
+            'iot': 'Internet of Things',
+            'ar': 'Augmented Reality',
+            'vr': 'Virtual Reality',
+            'mixed reality': 'Mixed Reality',
+            'edge computing': 'Edge Computing',
+            'quantum computing': 'Quantum Computing',
+            '5g': '5G Technology',
+            
+            # Business & Domain Skills
+            'business analysis': 'Business Analysis',
+            'product management': 'Product Management',
+            'digital marketing': 'Digital Marketing',
+            'seo': 'Search Engine Optimization',
+            'content marketing': 'Content Marketing',
+            'social media': 'Social Media Marketing',
+            'e-commerce': 'E-commerce',
+            'fintech': 'Financial Technology',
+            'healthcare': 'Healthcare Technology',
+            'edtech': 'Educational Technology'
         }
         
         message_lower = message.lower()
