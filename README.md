@@ -1,4 +1,4 @@
-# 🚀 AI-Powered Career Guidance Platform
+# 🚀 TourGuide - AI-Powered Career Guidance Platform
 
 A comprehensive career guidance platform that uses **Google Gemini AI** to provide personalized career mentorship, roadmap planning, and skill development guidance.
 
@@ -11,12 +11,14 @@ A comprehensive career guidance platform that uses **Google Gemini AI** to provi
 - **Context-Aware Guidance**: AI remembers your background and provides tailored advice
 - **Actionable Steps**: Receive specific, time-bound action plans (weekly/monthly milestones)
 - **Interactive Chat**: Real-time conversation with your personal career assistant
+- **Friendly AI Guide**: Conversational AI that acts like a supportive mentor with encouraging language
 
 ### 🎯 **Core Capabilities**
 - **Career Analysis**: Comprehensive skill assessment and career path recommendations
 - **Skill Extraction**: Automatically identify and track your growing skill set
 - **Mock Tests**: Personalized quizzes based on your expertise level
-- **Industry-Specific Guidance**: Tailored advice for different tech domains
+- **Industry-Specific Guidance**: Tailored advice for different tech and medical domains
+- **Enhanced Medical Domains**: Comprehensive coverage of 12 medical specializations with detailed career paths
 
 ### 🛠️ **Technology Stack**
 - **Backend**: FastAPI (Python 3.13)
@@ -94,6 +96,17 @@ What's my learning roadmap?"
 - Month 3: Machine learning basics
 - Specific resources and timeline
 
+### Medical Specialization Query
+```
+"I'm interested in becoming a pediatrician. What steps should I take?"
+```
+
+**AI Response**: Provides a detailed roadmap for medical specialization with:
+- Pre-medical education requirements
+- Medical school preparation
+- Residency and specialization paths
+- Licensing and certification information
+
 ### Skill Building Query
 ```
 "I know Python basics. What should I learn next for web development?"
@@ -122,6 +135,7 @@ The platform uses **Google Gemini AI** to provide:
 2. **Personalized Responses**: Tailors advice to individual circumstances
 3. **Structured Roadmaps**: Creates step-by-step learning plans
 4. **Follow-up Questions**: Guides users to provide more specific information
+5. **Friendly Tone**: Conversational responses that encourage and support users
 
 ### AI Configuration
 ```python
@@ -170,12 +184,14 @@ GOOGLE_GENAI_API_KEY=your_gemini_api_key
 - Message history
 - Quick action buttons
 - Skill extraction notifications
+- Friendly, encouraging AI responses
 
 ### 📊 **Career Analysis Dashboard**
 - Comprehensive skill assessment
 - Multiple career path suggestions
 - Salary range information (INR/USD)
 - Growth prospect indicators
+- Medical specialization options
 
 ### 🎯 **Personalized Learning Paths**
 - Custom roadmaps based on experience level

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
-from models.schemas import AnalyzeRequest, AnalyzeResponse, CareerPath, RoadmapStep, Course, User
+from models.schemas import AnalyzeRequest, AnalyzeResponse, CareerPath, RoadmapStep, Course, Certification, User
 from services.ai_service import AIService
 from dependencies import get_current_user
 from typing import Optional
@@ -35,12 +35,14 @@ async def analyze_career_paths(
         selected_path = CareerPath(**analysis["selected_path"])
         roadmap = [RoadmapStep(**step) for step in analysis["roadmap"]]
         courses = [Course(**course) for course in analysis["courses"]]
+        certifications = [Certification(**cert) for cert in analysis.get("certifications", [])]
         
         return AnalyzeResponse(
             career_paths=career_paths,
             selected_path=selected_path,
             roadmap=roadmap,
-            courses=courses
+            courses=courses,
+            certifications=certifications
         )
         
     except Exception as e:

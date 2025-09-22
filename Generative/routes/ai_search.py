@@ -185,10 +185,79 @@ async def get_supported_technologies():
     """
     Return comprehensive list of all supported technologies and domains
     """
+    # Enhanced skill database covering ALL technologies
+    comprehensive_skills = {
+        'Programming Languages': [
+            'Python', 'JavaScript', 'Java', 'C++', 'C#', 'TypeScript', 'PHP', 'Ruby', 'Go', 'Rust',
+            'Swift', 'Kotlin', 'Scala', 'R', 'MATLAB', 'Perl', 'Dart', 'Lua', 'Haskell', 'Clojure',
+            'F#', 'Erlang', 'Elixir', 'Julia', 'Nim', 'Crystal', 'Zig', 'Assembly', 'Fortran', 'COBOL',
+            'Objective-C', 'Solidity', 'Verilog', 'VHDL', 'C', 'Pascal', 'Ada', 'Prolog', 'Scheme'
+        ],
+        'Frontend Frameworks': [
+            'React', 'Vue.js', 'Angular', 'Svelte', 'Ember.js', 'Backbone.js', 'Alpine.js', 'Lit',
+            'Stimulus', 'Next.js', 'Nuxt.js', 'Gatsby', 'Quasar', 'Vuetify', 'Chakra UI', 'Material-UI',
+            'Ant Design', 'Bootstrap', 'Tailwind CSS', 'Bulma', 'Foundation', 'Semantic UI'
+        ],
+        'Backend Frameworks': [
+            'Node.js', 'Express.js', 'Django', 'Flask', 'FastAPI', 'Spring Boot', 'Spring Framework',
+            'Laravel', 'Symphony', 'Ruby on Rails', 'Sinatra', 'ASP.NET Core', 'Blazor', 'Gin',
+            'Echo', 'Fiber', 'Actix Web', 'Rocket', 'Vapor', 'NestJS', 'Koa.js', 'Fastify'
+        ],
+        'Mobile Development': [
+            'React Native', 'Flutter', 'Ionic', 'Xamarin', 'Cordova', 'PhoneGap', 'SwiftUI',
+            'UIKit', 'Android Jetpack', 'Jetpack Compose', 'Titanium', 'Unity Mobile', 'Cocos2d'
+        ],
+        'Databases': [
+            'MySQL', 'PostgreSQL', 'MongoDB', 'Redis', 'SQLite', 'Oracle Database', 'SQL Server',
+            'MariaDB', 'CouchDB', 'Cassandra', 'DynamoDB', 'Firebase Firestore', 'Neo4j',
+            'InfluxDB', 'TimescaleDB', 'CouchBase', 'Amazon RDS', 'Supabase', 'PlanetScale'
+        ],
+        'Cloud & DevOps': [
+            'AWS', 'Microsoft Azure', 'Google Cloud Platform', 'Docker', 'Kubernetes', 'Terraform',
+            'Ansible', 'Jenkins', 'GitLab CI', 'GitHub Actions', 'CircleCI', 'Travis CI', 'Helm',
+            'Vagrant', 'Chef', 'Puppet', 'Prometheus', 'Grafana', 'ELK Stack', 'Datadog'
+        ],
+        'Data Science & AI': [
+            'Machine Learning', 'Deep Learning', 'TensorFlow', 'PyTorch', 'Keras', 'Scikit-learn',
+            'Pandas', 'NumPy', 'OpenCV', 'NLTK', 'spaCy', 'Hugging Face', 'LangChain', 'Jupyter',
+            'Apache Spark', 'Hadoop', 'Kafka', 'Airflow', 'MLflow', 'Weights & Biases'
+        ],
+        'Game Development': [
+            'Unity', 'Unreal Engine', 'Godot', 'GameMaker Studio', 'Construct 3', 'Blender',
+            'Maya', '3ds Max', 'Substance Painter', 'Houdini', 'CryEngine', 'Lumberyard'
+        ],
+        'Design Tools': [
+            'Figma', 'Sketch', 'Adobe XD', 'InVision', 'Principle', 'Framer', 'Zeplin',
+            'Adobe Photoshop', 'Adobe Illustrator', 'Adobe After Effects', 'Canva', 'GIMP'
+        ],
+        'Testing & QA': [
+            'Jest', 'Mocha', 'Chai', 'Cypress', 'Selenium', 'Playwright', 'Puppeteer',
+            'TestNG', 'JUnit', 'Pytest', 'RSpec', 'Jasmine', 'Karma', 'Protractor'
+        ],
+        'Security': [
+            'Cybersecurity', 'Penetration Testing', 'Ethical Hacking', 'OWASP', 'Metasploit',
+            'Nmap', 'Wireshark', 'Burp Suite', 'Kali Linux', 'Cryptography', 'OAuth', 'JWT'
+        ],
+        'Blockchain & Web3': [
+            'Blockchain', 'Ethereum', 'Solidity', 'Smart Contracts', 'Web3.js', 'Truffle',
+            'Hardhat', 'Metamask', 'IPFS', 'DeFi', 'NFT', 'Bitcoin', 'Chainlink', 'Polygon'
+        ],
+        'Business & Soft Skills': [
+            'Project Management', 'Agile', 'Scrum', 'Kanban', 'Leadership', 'Communication',
+            'Problem Solving', 'Critical Thinking', 'Team Collaboration', 'Product Management',
+            'Business Analysis', 'Requirements Gathering', 'Stakeholder Management'
+        ]
+    }
+    
+    # Flatten all skills into a single list
+    all_skills = []
+    for category, skills in comprehensive_skills.items():
+        all_skills.extend(skills)
+    
     return {
-        "total_technologies": 200,
-        "programming_languages": 50,
-        "frameworks": 80,
+        "total_technologies": len(all_skills),
+        "programming_languages": len(comprehensive_skills['Programming Languages']),
+        "frameworks": len(comprehensive_skills['Frontend Frameworks']) + len(comprehensive_skills['Backend Frameworks']),
         "career_domains": [
             "Software Development",
             "Data Science & Analytics", 
@@ -209,5 +278,6 @@ async def get_supported_technologies():
             "MERN Stack", "MEAN Stack", "Django + React", "Laravel + Vue.js",
             "Spring Boot + Angular", "Next.js + Node.js", "Flutter + Firebase",
             "Unity + C#", "TensorFlow + Python", "Ethereum + Solidity"
-        ]
+        ],
+        "all_skills": all_skills
     }

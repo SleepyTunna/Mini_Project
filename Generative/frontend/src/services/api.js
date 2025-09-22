@@ -31,7 +31,7 @@ tokenManager.initializeToken();
 
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000',
+  baseURL: 'http://localhost:8000', // Fixed to correct port 8000
   timeout: 30000, // 30 seconds timeout for AI requests
   headers: {
     'Content-Type': 'application/json',
@@ -81,12 +81,14 @@ export const careerAPI = {
   analyzeCareer: async (skills, expertise) => {
     try {
       const requestData = { skills, expertise };
+      console.log('Sending request to /analyze:', requestData);
       const response = await api.post('/analyze', requestData);
       
       if (!response.data) {
         throw new Error('Empty response from server');
       }
       
+      console.log('Received response from /analyze:', response.data);
       return response.data;
     } catch (error) {
       console.error('analyzeCareer error details:', {

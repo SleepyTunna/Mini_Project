@@ -7,6 +7,15 @@ class AnalyzeRequest(BaseModel):
     skills: str
     expertise: str
 
+class Certification(BaseModel):
+    """Certification recommendation"""
+    name: str
+    provider: str
+    description: str
+    difficulty: str
+    duration: str
+    url: str
+
 class CareerPath(BaseModel):
     """Career path information"""
     title: str
@@ -37,6 +46,7 @@ class AnalyzeResponse(BaseModel):
     selected_path: CareerPath
     roadmap: List[RoadmapStep]
     courses: List[Course]
+    certifications: List[Certification]
 
 class HealthResponse(BaseModel):
     """Health check response"""

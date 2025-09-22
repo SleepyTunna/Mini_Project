@@ -4,21 +4,65 @@ import requests
 from typing import Dict, Any, List
 from datetime import datetime
 import re
+import random
+
+# Handle optional imports with try/except blocks
+VERTEX_AI_AVAILABLE = False
+GOOGLE_GENAI_AVAILABLE = False
+
 try:
-    from google.cloud import aiplatform
-    from google.cloud import firestore
-    from vertexai.generative_models import GenerativeModel
+    from google.cloud import aiplatform as aiplatform_module
+    from google.cloud import firestore as firestore_module
+    from vertexai.generative_models import GenerativeModel as GenerativeModelClass
     VERTEX_AI_AVAILABLE = True
 except ImportError:
     print("Warning: Vertex AI not available. Using fallback AI services.")
-    VERTEX_AI_AVAILABLE = False
+    # Create dummy modules to prevent NameError
+    class DummyAiplatform:
+        @staticmethod
+        def init(*args, **kwargs):
+            pass
+    
+    class DummyFirestore:
+        class Client:
+            def __init__(self, *args, **kwargs):
+                pass
+    
+    class GenerativeModelClass:
+        def __init__(self, *args, **kwargs):
+            pass
+        
+        def generate_content(self, *args, **kwargs):
+            class DummyResponse:
+                def __init__(self):
+                    self.text = ""
+            return DummyResponse()
+
+    aiplatform_module = DummyAiplatform()
+    firestore_module = DummyFirestore()
 
 try:
-    import google.generativeai as genai
+    import google.generativeai as genai_module
     GOOGLE_GENAI_AVAILABLE = True
 except ImportError:
     print("Warning: Google Generative AI not available.")
-    GOOGLE_GENAI_AVAILABLE = False
+    # Create dummy module to prevent NameError
+    class DummyGenai:
+        @staticmethod
+        def configure(*args, **kwargs):
+            pass
+        
+        class GenerativeModel:
+            def __init__(self, *args, **kwargs):
+                pass
+            
+            def generate_content(self, *args, **kwargs):
+                class DummyResponse:
+                    def __init__(self):
+                        self.text = ""
+                return DummyResponse()
+    
+    genai_module = DummyGenai()
 
 from models.schemas import CareerPath, Course, RoadmapStep, MockTestQuestion
 
@@ -87,8 +131,8 @@ class AIService:
         # Initialize Vertex AI if available
         if self.vertex_ai_available:
             try:
-                aiplatform.init(project=self.project_id)
-                self.model = GenerativeModel("gemini-1.0-pro")
+                aiplatform_module.init(project=self.project_id)
+                self.model = GenerativeModelClass("gemini-1.0-pro")
                 print("✅ Vertex AI initialized successfully")
             except Exception as e:
                 print(f"Warning: Could not initialize Vertex AI: {e}")
@@ -97,7 +141,7 @@ class AIService:
         # Initialize Firestore client with error handling
         if self.vertex_ai_available:
             try:
-                self.firestore_client = firestore.Client(project=self.project_id)
+                self.firestore_client = firestore_module.Client(project=self.project_id)
             except Exception as e:
                 print(f"Warning: Could not initialize Firestore client: {e}")
                 self.firestore_client = None
@@ -112,10 +156,19 @@ class AIService:
         }
         
         print(f"🤖 AI Service initialized. Vertex AI: {'✅' if self.vertex_ai_available else '❌'}")
-        if not self.vertex_ai_available:
-            available_fallbacks = [name for name, available in self.fallback_apis.items() if available]
-            print(f"📡 Available fallback AI services: {available_fallbacks if available_fallbacks else 'None - using static responses'}")
-    
+        available_fallbacks = [name for name, available in self.fallback_apis.items() if available]
+        print(f"📡 Available fallback AI services: {available_fallbacks if available_fallbacks else 'None - using static responses'}")
+        
+        # If no AI services are available, inform user about setup options
+        if not self.vertex_ai_available and not any(self.fallback_apis.values()):
+            print("\n⚠️  No AI services configured!")
+            print("To enable AI features, you can:")
+            print("1. Use Google Generative AI (Gemini): Add GOOGLE_GENAI_API_KEY to .env")
+            print("2. Use Hugging Face: Add HUGGINGFACE_API_KEY to .env")
+            print("3. Use Ollama: Install from https://ollama.com/ and run locally")
+            print("4. Use Groq: Add GROQ_API_KEY to .env")
+            print("5. Use OpenAI-compatible services: Add OPENAI_FREE_API_URL and OPENAI_FREE_API_KEY to .env")
+
     def _init_google_genai(self) -> bool:
         """Initialize Google Generative AI API (Gemini)"""
         try:
@@ -130,8 +183,8 @@ class AIService:
             
             if GOOGLE_GENAI_AVAILABLE:
                 # Also set up the SDK if available
-                genai.configure(api_key=api_key)
-                self.genai_model = genai.GenerativeModel('gemini-1.5-flash')
+                genai_module.configure(api_key=api_key)
+                self.genai_model = genai_module.GenerativeModel('gemini-1.5-flash')
                 print("✅ Google Generative AI (Gemini) initialized successfully with SDK")
             else:
                 print("✅ Google Generative AI (Gemini) initialized for direct REST API calls")
@@ -410,6 +463,7 @@ Provide a comprehensive roadmap that includes:
    - Portfolio pieces to create
 
 Make this roadmap actionable, specific, and tailored to their current skill level. Include realistic timelines and practical next steps.
+Make the tone friendly and encouraging, like a helpful mentor guiding a friend through their career journey.
         """
         
         ai_response = self._generate_with_fallback_ai(roadmap_prompt)
@@ -421,42 +475,46 @@ Make this roadmap actionable, specific, and tailored to their current skill leve
         return f"""
 🗺️ **Your Personalized Career Roadmap**
 
+Hey there, future rockstar! 👋 I'm so excited to help guide you on your journey to becoming a {career_goal}! Let's break this down into manageable steps that will set you up for success.
+
 **Current Status:** {experience_level} with skills in {user_skills or "foundational areas"}
 **Target Goal:** {career_goal}
 
 **🚀 Immediate Actions (Next 30 days):**
-1. Assess your current skill gaps
-2. Set up a dedicated learning schedule (1-2 hours daily)
-3. Create accounts on key learning platforms
+1. Assess your current skill gaps - we'll figure out exactly where you are and where you want to go!
+2. Set up a dedicated learning schedule (1-2 hours daily) - consistency is key to success! 💪
+3. Create accounts on key learning platforms - time to get access to all those amazing resources!
 
 **🎯 Short-term Goals (3-6 months):**
-1. Complete 2-3 foundational courses
-2. Build your first portfolio project
-3. Join relevant online communities
-4. Start following industry leaders
+1. Complete 2-3 foundational courses - you've got this! 📚
+2. Build your first portfolio project - this will be something you'll be proud to show off!
+3. Join relevant online communities - connect with others on the same journey!
+4. Start following industry leaders - get inspired by those who've walked this path before you!
 
 **📈 Medium-term Goals (6-12 months):**
-1. Complete an advanced certification
-2. Build 3-5 portfolio projects
-3. Start networking in your field
-4. Apply for relevant positions
+1. Complete an advanced certification - level up your skills! 🏆
+2. Build 3-5 portfolio projects - create a showcase of your amazing work!
+3. Start networking in your field - make friends and connections in the industry!
+4. Apply for relevant positions - you'll be ready to take on the world!
 
 **🌟 Long-term Vision (1-2 years):**
-1. Secure your target role
-2. Develop leadership skills
-3. Consider specialization areas
-4. Mentor others in your journey
+1. Secure your target role - your dream job is waiting for you!
+2. Develop leadership skills - inspire and guide others as you've been guided!
+3. Consider specialization areas - become the go-to expert in your niche!
+4. Mentor others in your journey - pay it forward and help the next generation!
 
 **📚 Recommended Resources:**
-- Online platforms: Coursera, Udemy, freeCodeCamp
-- Books: Industry-specific bestsellers
-- Tools: Popular industry software
-- Communities: LinkedIn groups, Discord servers
+- Online platforms: Coursera, Udemy, freeCodeCamp - so many great options!
+- Books: Industry-specific bestsellers - knowledge is power! 📖
+- Tools: Popular industry software - get hands-on experience!
+- Communities: LinkedIn groups, Discord servers - connect with your tribe!
 
 **📉 Track Your Progress:**
-- Weekly skill assessments
-- Monthly portfolio updates
-- Quarterly goal reviews
+- Weekly skill assessments - celebrate your growth every week!
+- Monthly portfolio updates - see how far you've come!
+- Quarterly goal reviews - adjust and optimize as you learn more about yourself!
+
+Remember, every expert was once a beginner. You've got this, and I'm cheering you on every step of the way! 🌈✨
         """
     def generate_career_analysis(self, skills: str, expertise: str) -> Dict[str, Any]:
         """Generate career analysis using available AI services with fallbacks"""
@@ -502,10 +560,20 @@ Make this roadmap actionable, specific, and tailored to their current skill leve
                     "difficulty": "Beginner/Intermediate/Advanced",
                     "url": "Course URL or platform"
                 }}
+            ],
+            "certifications": [
+                {{
+                    "name": "Certification name",
+                    "provider": "Certification provider",
+                    "description": "Brief description of the certification",
+                    "difficulty": "Beginner/Intermediate/Advanced",
+                    "duration": "e.g., 3 months",
+                    "url": "Certification URL or platform"
+                }}
             ]
         }}
 
-        Provide exactly 3 career paths, select the best one, create a 5-step roadmap, and suggest 3-5 relevant courses.
+        Provide exactly 3 career paths, select the best one, create a 5-step roadmap, suggest 3-5 relevant courses, and recommend 3-5 relevant certifications.
         Focus on practical, actionable advice.
         """
 
@@ -538,14 +606,63 @@ Make this roadmap actionable, specific, and tailored to their current skill leve
                 
                 if start_idx != -1 and end_idx != -1:
                     json_str = ai_response[start_idx:end_idx]
-                    result = json.loads(json_str)
-                    return result
+                    # Try to fix common JSON issues
+                    try:
+                        result = json.loads(json_str)
+                        return result
+                    except json.JSONDecodeError as e:
+                        # Try to fix common JSON issues
+                        fixed_json = self._fix_json_format(json_str)
+                        if fixed_json:
+                            result = json.loads(fixed_json)
+                            return result
+                        else:
+                            print(f"Error parsing AI response: {e}")
+                            print(f"JSON string: {json_str[:200]}...")  # Print first 200 chars for debugging
             except Exception as e:
                 print(f"Error parsing AI response: {e}")
+                if 'ai_response' in locals():
+                    print(f"Response preview: {ai_response[:200] if ai_response else 'No response'}...")
         
         # Fallback to static response
         print("📊 Using enhanced static career analysis")
         return self._create_enhanced_fallback_response(skills, expertise)
+    
+    def _fix_json_format(self, json_str: str) -> str:
+        """Attempt to fix common JSON formatting issues"""
+        try:
+            # Remove any text before the first {
+            first_brace = json_str.find('{')
+            if first_brace > 0:
+                json_str = json_str[first_brace:]
+            
+            # Remove any text after the last }
+            last_brace = json_str.rfind('}')
+            if last_brace > 0 and last_brace < len(json_str) - 1:
+                json_str = json_str[:last_brace + 1]
+            
+            # Fix common issues
+            # Replace single quotes with double quotes for string values
+            import re
+            
+            # Fix trailing commas
+            json_str = re.sub(r',(\s*[}\]])', r'\1', json_str)
+            
+            # Try to fix unquoted keys (this is a simple approach)
+            json_str = re.sub(r'([{,]\s*)([a-zA-Z_][a-zA-Z0-9_]*)\s*:', r'\1"\2":', json_str)
+            
+            # Try to fix single quotes around strings
+            # This is a simplified approach - a full JSON parser would be better
+            parts = json_str.split('"')
+            for i in range(1, len(parts) - 1, 2):
+                # Skip even indices (they're outside quotes)
+                continue
+            # For odd indices, they're inside quotes, so we don't modify them
+            
+            return json_str
+        except Exception as e:
+            print(f"Error fixing JSON format: {e}")
+            return ""
     
     def _create_enhanced_fallback_response(self, skills: str, expertise: str) -> Dict[str, Any]:
         """Create an enhanced fallback response that adapts to user's skills"""
@@ -553,7 +670,6 @@ Make this roadmap actionable, specific, and tailored to their current skill leve
         skills_lower = skills.lower()
         
         # Enhanced domain detection with comprehensive skill mapping
-        skills_lower = skills.lower()
         domain_keywords = {
             'software_development': [
                 'programming', 'coding', 'software', 'web development', 'app development',
@@ -616,6 +732,89 @@ Make this roadmap actionable, specific, and tailored to their current skill leve
                 'qa', 'quality assurance', 'testing', 'test automation', 'selenium',
                 'cypress', 'jest', 'unit testing', 'integration testing', 'performance testing',
                 'manual testing', 'bug tracking', 'test planning'
+            ],
+            'engineering_hardware': [
+                'hardware', 'embedded systems', 'circuit design', 'pcb design', 'vhdl', 'verilog',
+                'fpga', 'microcontroller', 'arduino', 'raspberry pi', 'electronics', 'iot'
+            ],
+            'medicine_general': [
+                'medicine', 'medical', 'patient care', 'diagnosis', 'treatment', 'healthcare',
+                'clinical', 'hospital', 'doctor', 'physician'
+            ],
+            'medicine_surgery': [
+                'surgery', 'surgical', 'operation', 'operative', 'anatomy', 'surgeon'
+            ],
+            'medicine_pediatrics': [
+                'pediatrics', 'child', 'children', 'baby', 'infant', 'toddler'
+            ],
+            'medicine_psychiatry': [
+                'psychiatry', 'mental health', 'psychology', 'therapy', 'counseling'
+            ],
+            'medicine_dermatology': [
+                'dermatology', 'skin', 'hair', 'nails', 'cosmetic'
+            ],
+            'medicine_cardiology': [
+                'cardiology', 'heart', 'cardiac', 'cardiovascular', 'ecg', 'echocardiography'
+            ],
+            'medicine_neurology': [
+                'neurology', 'brain', 'nervous system', 'neuroscience', 'neurosurgery'
+            ],
+            'medicine_orthopedics': [
+                'orthopedics', 'bones', 'joints', 'muscles', 'spine', 'sports medicine'
+            ],
+            'medicine_ophthalmology': [
+                'ophthalmology', 'eye', 'vision', 'optometry', 'optometrist'
+            ],
+            'medicine_gynecology': [
+                'gynecology', 'women', 'reproductive', 'obstetrics', 'pregnancy'
+            ],
+            'medicine_radiology': [
+                'radiology', 'x-ray', 'mri', 'ct scan', 'imaging', 'radiologist'
+            ],
+            'medicine_anesthesiology': [
+                'anesthesiology', 'anesthesia', 'pain management', 'critical care'
+            ],
+            'business_finance': [
+                'finance', 'financial', 'accounting', 'investment', 'banking', 'corporate finance'
+            ],
+            'business_marketing': [
+                'marketing', 'advertising', 'branding', 'campaign', 'seo', 'sem'
+            ],
+            'business_hr': [
+                'human resources', 'hr', 'recruitment', 'talent', 'employee', 'staffing'
+            ],
+            'business_operations': [
+                'operations', 'supply chain', 'logistics', 'process', 'optimization', 'quality'
+            ],
+            'creative_design': [
+                'graphic design', 'illustration', 'photoshop', 'adobe', 'creative', 'art'
+            ],
+            'creative_writing': [
+                'writing', 'content', 'copywriting', 'author', 'journalism', 'editor'
+            ],
+            'creative_video': [
+                'video', 'filmmaking', 'editing', 'cinematography', 'youtube', 'tiktok'
+            ],
+            'creative_music': [
+                'music', 'audio', 'sound', 'instrument', 'composition', 'performance'
+            ],
+            'education_teaching': [
+                'teaching', 'education', 'teacher', 'tutor', 'classroom', 'instruction'
+            ],
+            'education_training': [
+                'training', 'corporate training', 'workshop', 'facilitation', 'instructional'
+            ],
+            'education_research': [
+                'research', 'academic', 'phd', 'thesis', 'data collection', 'methodology'
+            ],
+            'legal_corporate': [
+                'corporate law', 'contract', 'merger', 'acquisition', 'compliance'
+            ],
+            'legal_criminal': [
+                'criminal law', 'court', 'prosecution', 'defense', 'criminal justice'
+            ],
+            'legal_family': [
+                'family law', 'divorce', 'custody', 'marriage', 'child support'
             ]
         }
         
@@ -626,48 +825,282 @@ Make this roadmap actionable, specific, and tailored to their current skill leve
             if score > 0:
                 domain_scores[domain] = score
         
-        # Get the domain with highest keyword matches, default to software_development
+        # Get the domain with highest keyword matches, default to a random domain from all options
         if domain_scores:
             primary_domain = max(domain_scores.keys(), key=lambda k: domain_scores[k])
         else:
-            primary_domain = 'software_development'
+            # If no matches, randomly select from all domains to ensure variety
+            all_domains = list(domain_keywords.keys())
+            primary_domain = random.choice(all_domains)
         
         # Enhanced comprehensive domain responses for ALL career fields
         domain_responses = {
             'software_development': {
                 'career_paths': [
                     {
-                        'title': 'Full Stack Developer',
-                        'description': 'Develop complete web applications from frontend to backend',
-                        'required_skills': ['JavaScript', 'React', 'Node.js', 'Databases', 'Git'],
-                        'salary_range': convert_usd_to_inr('$70,000 - $130,000'),
-                        'growth_prospect': 'High - Strong demand for versatile developers'
-                    },
-                    {
                         'title': 'Software Engineer',
-                        'description': 'Design and develop software systems and applications',
+                        'description': 'Design and develop software systems and applications. As a friendly guide, I\'d say this is an exciting path where you get to build amazing things that can impact millions of lives! 🚀',
                         'required_skills': ['Programming Languages', 'Data Structures', 'System Design', 'Testing'],
                         'salary_range': convert_usd_to_inr('$80,000 - $150,000'),
                         'growth_prospect': 'High - Technology sector continues to grow rapidly'
                     },
                     {
-                        'title': 'Frontend Developer',
-                        'description': 'Create engaging user interfaces and experiences',
-                        'required_skills': ['HTML/CSS', 'JavaScript', 'React/Vue/Angular', 'Responsive Design'],
-                        'salary_range': convert_usd_to_inr('$65,000 - $120,000'),
-                        'growth_prospect': 'High - User experience is crucial for business success'
+                        'title': 'DevOps Engineer',
+                        'description': 'Automate and optimize software delivery pipelines. This role is like being the bridge between development and operations - making sure everything runs smoothly! 🌉',
+                        'required_skills': ['Docker', 'Kubernetes', 'CI/CD', 'Infrastructure as Code', 'Monitoring'],
+                        'salary_range': convert_usd_to_inr('$85,000 - $140,000'),
+                        'growth_prospect': 'Very High - Critical for modern software delivery'
+                    },
+                    {
+                        'title': 'Technical Lead',
+                        'description': 'Lead development teams and guide technical decisions. As a leader, you\'ll be mentoring others and making important technology choices - it\'s both challenging and rewarding! 🌟',
+                        'required_skills': ['Leadership', 'Architecture', 'Project Management', 'Mentoring'],
+                        'salary_range': convert_usd_to_inr('$100,000 - $180,000'),
+                        'growth_prospect': 'High - Leadership roles are in high demand'
                     }
-                ],
-                'selected_path': {
-                    'title': 'Full Stack Developer',
-                    'description': 'Based on your programming skills, becoming a Full Stack Developer offers the best opportunity to leverage your knowledge while building complete applications',
-                    'required_skills': ['JavaScript', 'React', 'Node.js', 'Databases', 'Git', 'API Development'],
-                    'salary_range': convert_usd_to_inr('$70,000 - $130,000'),
-                    'growth_prospect': 'High - Full stack developers are highly sought after for their versatility'
-                }
+                ]
             },
             'data_science': {
                 'career_paths': [
+                    {
+                        'title': 'Data Scientist',
+                        'description': 'Extract insights from data to drive business decisions. You\'ll be like a detective, uncovering hidden patterns in data to help companies make better decisions! 🔍',
+                        'required_skills': ['Python', 'Statistics', 'Machine Learning', 'SQL', 'Data Visualization'],
+                        'salary_range': convert_usd_to_inr('$90,000 - $160,000'),
+                        'growth_prospect': 'High - Data-driven decision making is crucial'
+                    },
+                    {
+                        'title': 'Machine Learning Engineer',
+                        'description': 'Build and deploy machine learning models. This is where you get to create intelligent systems that can learn and improve over time - like teaching computers to think! 🤖',
+                        'required_skills': ['Python', 'Machine Learning', 'Deep Learning', 'TensorFlow', 'PyTorch'],
+                        'salary_range': convert_usd_to_inr('$95,000 - $170,000'),
+                        'growth_prospect': 'Very High - AI and ML are transforming industries'
+                    },
+                    {
+                        'title': 'Data Engineer',
+                        'description': 'Design and build data pipelines and infrastructure. You\'ll be the architect behind the scenes, making sure data flows smoothly to where it\'s needed! 🏗️',
+                        'required_skills': ['SQL', 'Data Warehousing', 'ETL', 'Big Data Technologies'],
+                        'salary_range': convert_usd_to_inr('$85,000 - $150,000'),
+                        'growth_prospect': 'High - Data infrastructure is essential'
+                    }
+                ]
+            },
+            'mobile_development': {
+                'career_paths': [
+                    {
+                        'title': 'Mobile Developer',
+                        'description': 'Build mobile applications for iOS and Android',
+                        'required_skills': ['Swift', 'Kotlin', 'Java', 'React Native', 'Flutter'],
+                        'salary_range': convert_usd_to_inr('$75,000 - $140,000'),
+                        'growth_prospect': 'High - Mobile app usage is growing'
+                    },
+                    {
+                        'title': 'Mobile UI/UX Designer',
+                        'description': 'Design user interfaces and experiences for mobile apps',
+                        'required_skills': ['UI/UX Design', 'Wireframing', 'Prototyping', 'User Research'],
+                        'salary_range': convert_usd_to_inr('$70,000 - $130,000'),
+                        'growth_prospect': 'High - User experience is key'
+                    },
+                    {
+                        'title': 'Mobile Game Developer',
+                        'description': 'Create games for mobile platforms',
+                        'required_skills': ['Unity', 'Unreal Engine', 'C#', 'Game Design'],
+                        'salary_range': convert_usd_to_inr('$80,000 - $140,000'),
+                        'growth_prospect': 'High - Mobile gaming is popular'
+                    }
+                ]
+            },
+            'game_development': {
+                'career_paths': [
+                    {
+                        'title': 'Game Developer',
+                        'description': 'Create video games',
+                        'required_skills': ['Unity', 'Unreal Engine', 'C#', 'Game Design'],
+                        'salary_range': convert_usd_to_inr('$75,000 - $140,000'),
+                        'growth_prospect': 'High - Gaming industry is expanding'
+                    },
+                    {
+                        'title': 'Game Designer',
+                        'description': 'Design game mechanics and experiences',
+                        'required_skills': ['Game Design', 'Storyboarding', 'Prototyping', 'User Research'],
+                        'salary_range': convert_usd_to_inr('$70,000 - $130,000'),
+                        'growth_prospect': 'High - Creative design is essential'
+                    },
+                    {
+                        'title': 'Game Artist',
+                        'description': 'Create visual assets for games',
+                        'required_skills': ['3D Modeling', 'Animation', 'Blender', 'Photoshop'],
+                        'salary_range': convert_usd_to_inr('$75,000 - $140,000'),
+                        'growth_prospect': 'High - Visuals are key'
+                    }
+                ]
+            },
+            'devops_cloud': {
+                'career_paths': [
+                    {
+                        'title': 'DevOps Engineer',
+                        'description': 'Automate and optimize software delivery pipelines',
+                        'required_skills': ['Docker', 'Kubernetes', 'CI/CD', 'Infrastructure as Code', 'Monitoring'],
+                        'salary_range': convert_usd_to_inr('$85,000 - $140,000'),
+                        'growth_prospect': 'Very High - Critical for modern software delivery'
+                    },
+                    {
+                        'title': 'Cloud Engineer',
+                        'description': 'Design and manage cloud infrastructure',
+                        'required_skills': ['AWS', 'Azure', 'GCP', 'Networking', 'Security'],
+                        'salary_range': convert_usd_to_inr('$90,000 - $160,000'),
+                        'growth_prospect': 'High - Cloud computing is essential'
+                    },
+                    {
+                        'title': 'Site Reliability Engineer',
+                        'description': 'Ensure system reliability and performance',
+                        'required_skills': ['Linux', 'Monitoring', 'Automation', 'Incident Response'],
+                        'salary_range': convert_usd_to_inr('$95,000 - $170,000'),
+                        'growth_prospect': 'High - Reliability is critical'
+                    }
+                ]
+            },
+            'cybersecurity': {
+                'career_paths': [
+                    {
+                        'title': 'Cybersecurity Analyst',
+                        'description': 'Identify and mitigate security threats',
+                        'required_skills': ['Network Security', 'Vulnerability Assessment', 'Security Analysis'],
+                        'salary_range': convert_usd_to_inr('$75,000 - $140,000'),
+                        'growth_prospect': 'High - Security is a top priority'
+                    },
+                    {
+                        'title': 'Penetration Tester',
+                        'description': 'Test systems for security vulnerabilities',
+                        'required_skills': ['Penetration Testing', 'Ethical Hacking', 'Security Analysis'],
+                        'salary_range': convert_usd_to_inr('$80,000 - $140,000'),
+                        'growth_prospect': 'High - Testing is essential'
+                    },
+                    {
+                        'title': 'Security Engineer',
+                        'description': 'Design and implement security solutions',
+                        'required_skills': ['Security Engineering', 'Networking', 'Security Analysis'],
+                        'salary_range': convert_usd_to_inr('$90,000 - $160,000'),
+                        'growth_prospect': 'High - Solutions are critical'
+                    }
+                ]
+            },
+            'design_ux': {
+                'career_paths': [
+                    {
+                        'title': 'UI/UX Designer',
+                        'description': 'Design user interfaces and experiences',
+                        'required_skills': ['UI/UX Design', 'Wireframing', 'Prototyping', 'User Research'],
+                        'salary_range': convert_usd_to_inr('$70,000 - $130,000'),
+                        'growth_prospect': 'High - User experience is key'
+                    },
+                    {
+                        'title': 'Graphic Designer',
+                        'description': 'Create visual designs for various media',
+                        'required_skills': ['Graphic Design', 'Photoshop', 'Illustrator', 'Adobe'],
+                        'salary_range': convert_usd_to_inr('$75,000 - $140,000'),
+                        'growth_prospect': 'High - Visuals are essential'
+                    },
+                    {
+                        'title': 'Product Designer',
+                        'description': 'Design products from concept to launch',
+                        'required_skills': ['Product Design', 'User Research', 'Prototyping', 'Collaboration'],
+                        'salary_range': convert_usd_to_inr('$80,000 - $140,000'),
+                        'growth_prospect': 'High - Products are key'
+                    }
+                ]
+            },
+            'business_analysis': {
+                'career_paths': [
+                    {
+                        'title': 'Business Analyst',
+                        'description': 'Analyze business processes and data',
+                        'required_skills': ['Business Analysis', 'Requirements Analysis', 'Stakeholder Management'],
+                        'salary_range': convert_usd_to_inr('$70,000 - $130,000'),
+                        'growth_prospect': 'High - Analysis is essential'
+                    },
+                    {
+                        'title': 'Product Manager',
+                        'description': 'Manage product development and launch',
+                        'required_skills': ['Product Management', 'Agile', 'Stakeholder Management'],
+                        'salary_range': convert_usd_to_inr('$80,000 - $140,000'),
+                        'growth_prospect': 'High - Products are key'
+                    },
+                    {
+                        'title': 'Project Manager',
+                        'description': 'Manage projects from start to finish',
+                        'required_skills': ['Project Management', 'Agile', 'Stakeholder Management'],
+                        'salary_range': convert_usd_to_inr('$85,000 - $140,000'),
+                        'growth_prospect': 'High - Projects are essential'
+                    }
+                ]
+            },
+            'digital_marketing': {
+                'career_paths': [
+                    {
+                        'title': 'Digital Marketing Specialist',
+                        'description': 'Plan and execute digital marketing campaigns',
+                        'required_skills': ['SEO', 'SEM', 'Social Media', 'Content Marketing'],
+                        'salary_range': convert_usd_to_inr('$70,000 - $130,000'),
+                        'growth_prospect': 'High - Digital marketing is essential'
+                    },
+                    {
+                        'title': 'SEO Specialist',
+                        'description': 'Optimize websites for search engines',
+                        'required_skills': ['SEO', 'Keyword Research', 'On-page Optimization', 'Technical SEO'],
+                        'salary_range': convert_usd_to_inr('$75,000 - $140,000'),
+                        'growth_prospect': 'High - SEO is critical'
+                    },
+                    {
+                        'title': 'Content Marketing Specialist',
+                        'description': 'Create and distribute content',
+                        'required_skills': ['Content Marketing', 'Copywriting', 'SEO', 'Social Media'],
+                        'salary_range': convert_usd_to_inr('$80,000 - $140,000'),
+                        'growth_prospect': 'High - Content is key'
+                    }
+                ]
+            },
+            'blockchain_web3': {
+                'career_paths': [
+                    {
+                        'title': 'Blockchain Developer',
+                        'description': 'Build blockchain applications',
+                        'required_skills': ['Solidity', 'Blockchain', 'Smart Contracts', 'DApps'],
+                        'salary_range': convert_usd_to_inr('$80,000 - $140,000'),
+                        'growth_prospect': 'High - Blockchain is growing'
+                    },
+                    {
+                        'title': 'Blockchain Analyst',
+                        'description': 'Analyze blockchain technologies and applications',
+                        'required_skills': ['Blockchain', 'Smart Contracts', 'Cryptocurrency', 'Security'],
+                        'salary_range': convert_usd_to_inr('$75,000 - $140,000'),
+                        'growth_prospect': 'High - Analysis is essential'
+                    },
+                    {
+                        'title': 'Blockchain Consultant',
+                        'description': 'Advise on blockchain adoption and implementation',
+                        'required_skills': ['Blockchain', 'Smart Contracts', 'Cryptocurrency', 'Consulting'],
+                        'salary_range': convert_usd_to_inr('$90,000 - $160,000'),
+                        'growth_prospect': 'High - Consulting is critical'
+                    }
+                ]
+            },
+            'ai_ml_engineering': {
+                'career_paths': [
+                    {
+                        'title': 'AI Engineer',
+                        'description': 'Build and deploy AI systems',
+                        'required_skills': ['AI Engineering', 'Machine Learning', 'Deep Learning', 'TensorFlow', 'PyTorch'],
+                        'salary_range': convert_usd_to_inr('$95,000 - $170,000'),
+                        'growth_prospect': 'Very High - AI is transforming industries'
+                    },
+                    {
+                        'title': 'ML Engineer',
+                        'description': 'Build and deploy machine learning models',
+                        'required_skills': ['Machine Learning', 'Deep Learning', 'TensorFlow', 'PyTorch'],
+                        'salary_range': convert_usd_to_inr('$90,000 - $160,000'),
+                        'growth_prospect': 'Very High - ML is essential'
+                    },
                     {
                         'title': 'Data Scientist',
                         'description': 'Extract insights from data to drive business decisions',
@@ -689,14 +1122,7 @@ Make this roadmap actionable, specific, and tailored to their current skill leve
                         'salary_range': convert_usd_to_inr('$100,000 - $180,000'),
                         'growth_prospect': 'Very High - AI/ML adoption is accelerating'
                     }
-                ],
-                'selected_path': {
-                    'title': 'Data Scientist',
-                    'description': 'Your analytical skills and data experience position you well for a data science career',
-                    'required_skills': ['Python', 'Statistics', 'Machine Learning', 'SQL', 'Data Visualization', 'Domain Expertise'],
-                    'salary_range': convert_usd_to_inr('$90,000 - $160,000'),
-                    'growth_prospect': 'Very High - Data science skills are in extremely high demand'
-                }
+                ]
             },
             'mobile_development': {
                 'career_paths': [
@@ -721,14 +1147,7 @@ Make this roadmap actionable, specific, and tailored to their current skill leve
                         'salary_range': convert_usd_to_inr('$70,000 - $130,000'),
                         'growth_prospect': 'High - Largest mobile platform globally'
                     }
-                ],
-                'selected_path': {
-                    'title': 'Mobile App Developer',
-                    'description': 'Your mobile development skills make you ideal for creating cross-platform applications',
-                    'required_skills': ['Cross-platform Development', 'Mobile UI/UX', 'App Store Optimization', 'Performance Optimization'],
-                    'salary_range': convert_usd_to_inr('$75,000 - $135,000'),
-                    'growth_prospect': 'High - Mobile-first approach is essential for modern businesses'
-                }
+                ]
             },
             'devops_cloud': {
                 'career_paths': [
@@ -753,14 +1172,7 @@ Make this roadmap actionable, specific, and tailored to their current skill leve
                         'salary_range': convert_usd_to_inr('$95,000 - $160,000'),
                         'growth_prospect': 'High - Reliability is crucial for digital services'
                     }
-                ],
-                'selected_path': {
-                    'title': 'DevOps Engineer',
-                    'description': 'Your infrastructure and automation skills are perfect for streamlining software delivery',
-                    'required_skills': ['Containerization', 'Orchestration', 'CI/CD Pipelines', 'Cloud Platforms', 'Monitoring'],
-                    'salary_range': convert_usd_to_inr('$85,000 - $140,000'),
-                    'growth_prospect': 'Very High - DevOps practices are essential for competitive software delivery'
-                }
+                ]
             },
             'cybersecurity': {
                 'career_paths': [
@@ -785,14 +1197,7 @@ Make this roadmap actionable, specific, and tailored to their current skill leve
                         'salary_range': convert_usd_to_inr('$90,000 - $150,000'),
                         'growth_prospect': 'Very High - Security by design is critical'
                     }
-                ],
-                'selected_path': {
-                    'title': 'Cybersecurity Analyst',
-                    'description': 'Your security knowledge makes you ideal for protecting organizations from cyber threats',
-                    'required_skills': ['Security Monitoring', 'Threat Detection', 'Incident Response', 'Security Frameworks'],
-                    'salary_range': convert_usd_to_inr('$70,000 - $120,000'),
-                    'growth_prospect': 'Very High - Cybersecurity is a top priority for all organizations'
-                }
+                ]
             },
             'design_ux': {
                 'career_paths': [
@@ -817,97 +1222,550 @@ Make this roadmap actionable, specific, and tailored to their current skill leve
                         'salary_range': convert_usd_to_inr('$80,000 - $140,000'),
                         'growth_prospect': 'High - Product-focused design is essential for business success'
                     }
-                ],
-                'selected_path': {
-                    'title': 'UX Designer',
-                    'description': 'Your design skills are perfect for creating user-centered digital experiences',
-                    'required_skills': ['User Research', 'Design Thinking', 'Prototyping', 'User Testing', 'Collaboration'],
-                    'salary_range': convert_usd_to_inr('$65,000 - $120,000'),
-                    'growth_prospect': 'High - Great UX is essential for digital product success'
-                }
+                ]
+            },
+            'engineering_hardware': {
+                'career_paths': [
+                    {
+                        'title': 'Hardware Engineer',
+                        'description': 'Design and develop computer hardware components and systems',
+                        'required_skills': ['Circuit Design', 'Embedded Systems', 'PCB Design', 'VHDL/Verilog'],
+                        'salary_range': convert_usd_to_inr('$75,000 - $130,000'),
+                        'growth_prospect': 'High - IoT and embedded systems growth'
+                    },
+                    {
+                        'title': 'FPGA Engineer',
+                        'description': 'Design and implement digital circuits using Field-Programmable Gate Arrays',
+                        'required_skills': ['Digital Logic', 'VHDL/Verilog', 'FPGA Design', 'Signal Processing'],
+                        'salary_range': convert_usd_to_inr('$85,000 - $145,000'),
+                        'growth_prospect': 'High - Specialized skills in demand'
+                    },
+                    {
+                        'title': 'Embedded Systems Engineer',
+                        'description': 'Develop software and hardware for embedded systems in various devices',
+                        'required_skills': ['C/C++', 'Microcontrollers', 'RTOS', 'Hardware-Software Integration'],
+                        'salary_range': convert_usd_to_inr('$80,000 - $140,000'),
+                        'growth_prospect': 'Very High - IoT and smart devices proliferation'
+                    }
+                ]
+            },
+            'medicine_general': {
+                'career_paths': [
+                    {
+                        'title': 'General Practitioner',
+                        'description': 'Provide primary healthcare services to patients of all ages',
+                        'required_skills': ['Patient Care', 'Diagnosis', 'Treatment Planning', 'Medical Ethics'],
+                        'salary_range': convert_usd_to_inr('$150,000 - $250,000'),
+                        'growth_prospect': 'Stable - Essential healthcare services'
+                    },
+                    {
+                        'title': 'Medical Specialist',
+                        'description': 'Specialize in a particular area of medicine after general practice',
+                        'required_skills': ['Advanced Diagnostics', 'Specialized Treatment', 'Continuing Education'],
+                        'salary_range': convert_usd_to_inr('$200,000 - $400,000'),
+                        'growth_prospect': 'High - Specialization increases demand'
+                    },
+                    {
+                        'title': 'Medical Researcher',
+                        'description': 'Conduct research to advance medical knowledge and treatments',
+                        'required_skills': ['Research Methodology', 'Data Analysis', 'Clinical Trials', 'Publication'],
+                        'salary_range': convert_usd_to_inr('$80,000 - $150,000'),
+                        'growth_prospect': 'High - Medical research is critical for advancement'
+                    }
+                ]
+            },
+            'medicine_surgery': {
+                'career_paths': [
+                    {
+                        'title': 'General Surgeon',
+                        'description': 'Perform surgical procedures to treat injuries, diseases, and deformities',
+                        'required_skills': ['Surgical Techniques', 'Anatomy', 'Operative Procedures', 'Patient Monitoring'],
+                        'salary_range': convert_usd_to_inr('$250,000 - $500,000'),
+                        'growth_prospect': 'High - Surgical skills always in demand'
+                    },
+                    {
+                        'title': 'Specialized Surgeon',
+                        'description': 'Focus on specific surgical areas like cardiac, neuro, or orthopedic surgery',
+                        'required_skills': ['Advanced Surgical Techniques', 'Specialized Anatomy', 'Precision', 'Decision Making'],
+                        'salary_range': convert_usd_to_inr('$350,000 - $700,000'),
+                        'growth_prospect': 'Very High - Specialized skills command premium'
+                    },
+                    {
+                        'title': 'Surgical Educator',
+                        'description': 'Teach and train the next generation of surgeons',
+                        'required_skills': ['Surgical Expertise', 'Teaching', 'Curriculum Development', 'Mentoring'],
+                        'salary_range': convert_usd_to_inr('$200,000 - $400,000'),
+                        'growth_prospect': 'Stable - Education is essential for profession'
+                    }
+                ]
+            },
+            'medicine_pediatrics': {
+                'career_paths': [
+                    {
+                        'title': 'Pediatrician',
+                        'description': 'Provide medical care specifically for infants, children, and adolescents',
+                        'required_skills': ['Child Development', 'Pediatric Diagnostics', 'Family Communication', 'Preventive Care'],
+                        'salary_range': convert_usd_to_inr('$180,000 - $300,000'),
+                        'growth_prospect': 'High - Growing focus on child health'
+                    },
+                    {
+                        'title': 'Pediatric Specialist',
+                        'description': 'Specialize in areas like pediatric cardiology, neurology, or oncology',
+                        'required_skills': ['Advanced Pediatrics', 'Specialized Diagnostics', 'Child Psychology', 'Family Support'],
+                        'salary_range': convert_usd_to_inr('$250,000 - $450,000'),
+                        'growth_prospect': 'Very High - Specialized pediatric care is in demand'
+                    },
+                    {
+                        'title': 'Neonatologist',
+                        'description': 'Care for newborn infants, especially those who are premature or critically ill',
+                        'required_skills': ['Neonatal Care', 'Intensive Care', 'Life Support', 'Family Counseling'],
+                        'salary_range': convert_usd_to_inr('$300,000 - $500,000'),
+                        'growth_prospect': 'High - Critical care for newborns'
+                    }
+                ]
+            },
+            'medicine_psychiatry': {
+                'career_paths': [
+                    {
+                        'title': 'Psychiatrist',
+                        'description': 'Diagnose, treat, and help prevent disorders related to mental health',
+                        'required_skills': ['Mental Health Diagnosis', 'Psychotherapy', 'Medication Management', 'Crisis Intervention'],
+                        'salary_range': convert_usd_to_inr('$200,000 - $350,000'),
+                        'growth_prospect': 'Very High - Increasing awareness of mental health'
+                    },
+                    {
+                        'title': 'Child and Adolescent Psychiatrist',
+                        'description': 'Specialize in mental health issues affecting children and teenagers',
+                        'required_skills': ['Child Psychology', 'Developmental Disorders', 'Family Therapy', 'Behavioral Interventions'],
+                        'salary_range': convert_usd_to_inr('$250,000 - $400,000'),
+                        'growth_prospect': 'Very High - Growing need for youth mental health services'
+                    },
+                    {
+                        'title': 'Addiction Psychiatrist',
+                        'description': 'Specialize in treating substance abuse and addictive behaviors',
+                        'required_skills': ['Addiction Medicine', 'Behavioral Therapy', 'Rehabilitation', 'Dual Diagnosis Treatment'],
+                        'salary_range': convert_usd_to_inr('$220,000 - $380,000'),
+                        'growth_prospect': 'High - Increasing focus on addiction treatment'
+                    }
+                ]
+            },
+            'medicine_dermatology': {
+                'career_paths': [
+                    {
+                        'title': 'Dermatologist',
+                        'description': 'Diagnose and treat conditions related to the skin, hair, and nails',
+                        'required_skills': ['Skin Pathology', 'Dermatologic Surgery', 'Cosmetic Procedures', 'Dermatologic Diagnostics'],
+                        'salary_range': convert_usd_to_inr('$300,000 - $500,000'),
+                        'growth_prospect': 'High - Growing demand for cosmetic and medical dermatology'
+                    },
+                    {
+                        'title': 'Dermatologic Surgeon',
+                        'description': 'Perform surgical procedures to treat skin conditions and cosmetic concerns',
+                        'required_skills': ['Surgical Techniques', 'Laser Surgery', 'Reconstructive Surgery', 'Aesthetic Procedures'],
+                        'salary_range': convert_usd_to_inr('$350,000 - $550,000'),
+                        'growth_prospect': 'High - Cosmetic and reconstructive procedures'
+                    },
+                    {
+                        'title': 'Pediatric Dermatologist',
+                        'description': 'Specialize in skin conditions affecting children and adolescents',
+                        'required_skills': ['Pediatric Dermatology', 'Skin Conditions in Children', 'Family Education', 'Developmental Considerations'],
+                        'salary_range': convert_usd_to_inr('$280,000 - $450,000'),
+                        'growth_prospect': 'High - Specialized pediatric skin care'
+                    }
+                ]
+            },
+            'medicine_cardiology': {
+                'career_paths': [
+                    {
+                        'title': 'Cardiologist',
+                        'description': 'Diagnose and treat diseases and conditions of the cardiovascular system',
+                        'required_skills': ['Cardiac Diagnostics', 'Echocardiography', 'Cardiac Catheterization', 'Electrophysiology'],
+                        'salary_range': convert_usd_to_inr('$350,000 - $600,000'),
+                        'growth_prospect': 'High - Heart disease is a leading cause of death'
+                    },
+                    {
+                        'title': 'Interventional Cardiologist',
+                        'description': 'Perform minimally invasive procedures to treat heart conditions',
+                        'required_skills': ['Cardiac Catheterization', 'Angioplasty', 'Stent Placement', 'Minimally Invasive Techniques'],
+                        'salary_range': convert_usd_to_inr('$400,000 - $700,000'),
+                        'growth_prospect': 'Very High - Advanced cardiac procedures'
+                    },
+                    {
+                        'title': 'Cardiac Surgeon',
+                        'description': 'Perform surgical procedures on the heart and major blood vessels',
+                        'required_skills': ['Cardiac Surgery', 'Open Heart Surgery', 'Bypass Surgery', 'Heart Transplantation'],
+                        'salary_range': convert_usd_to_inr('$500,000 - $800,000'),
+                        'growth_prospect': 'High - Complex cardiac surgical procedures'
+                    }
+                ]
+            },
+            'medicine_neurology': {
+                'career_paths': [
+                    {
+                        'title': 'Neurologist',
+                        'description': 'Diagnose and treat disorders of the nervous system',
+                        'required_skills': ['Neurological Diagnostics', 'Brain Imaging', 'Neuromuscular Disorders', 'Neuropharmacology'],
+                        'salary_range': convert_usd_to_inr('$280,000 - $500,000'),
+                        'growth_prospect': 'High - Growing understanding of neurological conditions'
+                    },
+                    {
+                        'title': 'Neurosurgeon',
+                        'description': 'Perform surgical procedures on the brain and nervous system',
+                        'required_skills': ['Neurosurgery', 'Brain Tumor Removal', 'Spinal Surgery', 'Microsurgery'],
+                        'salary_range': convert_usd_to_inr('$450,000 - $750,000'),
+                        'growth_prospect': 'Very High - Complex neurological surgical procedures'
+                    },
+                    {
+                        'title': 'Clinical Neurophysiologist',
+                        'description': 'Study the function of the brain and nervous system',
+                        'required_skills': ['EEG', 'EMG', 'Evoked Potentials', 'Sleep Studies', 'Neurodiagnostics'],
+                        'salary_range': convert_usd_to_inr('$250,000 - $400,000'),
+                        'growth_prospect': 'High - Specialized neurological testing'
+                    }
+                ]
+            },
+            'medicine_orthopedics': {
+                'career_paths': [
+                    {
+                        'title': 'Orthopedic Surgeon',
+                        'description': 'Diagnose and treat disorders of the musculoskeletal system',
+                        'required_skills': ['Orthopedic Surgery', 'Joint Replacement', 'Fracture Repair', 'Sports Medicine'],
+                        'salary_range': convert_usd_to_inr('$400,000 - $650,000'),
+                        'growth_prospect': 'High - Aging population increases orthopedic needs'
+                    },
+                    {
+                        'title': 'Sports Medicine Physician',
+                        'description': 'Treat sports-related injuries and promote athletic performance',
+                        'required_skills': ['Sports Injuries', 'Rehabilitation', 'Performance Enhancement', 'Injury Prevention'],
+                        'salary_range': convert_usd_to_inr('$250,000 - $450,000'),
+                        'growth_prospect': 'High - Growing sports and fitness industry'
+                    },
+                    {
+                        'title': 'Hand Surgeon',
+                        'description': 'Specialize in surgical treatment of hand and upper extremity conditions',
+                        'required_skills': ['Hand Surgery', 'Microsurgery', 'Nerve Repair', 'Reconstructive Surgery'],
+                        'salary_range': convert_usd_to_inr('$450,000 - $700,000'),
+                        'growth_prospect': 'High - Specialized surgical expertise'
+                    }
+                ]
+            },
+            'medicine_ophthalmology': {
+                'career_paths': [
+                    {
+                        'title': 'Ophthalmologist',
+                        'description': 'Diagnose and treat eye diseases and perform eye surgery',
+                        'required_skills': ['Eye Examination', 'Cataract Surgery', 'Glaucoma Treatment', 'Retinal Surgery'],
+                        'salary_range': convert_usd_to_inr('$300,000 - $550,000'),
+                        'growth_prospect': 'High - Vision care needs increase with age'
+                    },
+                    {
+                        'title': 'Optometrist',
+                        'description': 'Examine eyes for vision problems and eye diseases',
+                        'required_skills': ['Vision Testing', 'Prescription Lenses', 'Eye Health Assessment', 'Contact Lens Fitting'],
+                        'salary_range': convert_usd_to_inr('$120,000 - $200,000'),
+                        'growth_prospect': 'High - Primary eye care providers'
+                    },
+                    {
+                        'title': 'Oculoplastic Surgeon',
+                        'description': 'Specialize in plastic and reconstructive surgery of the eye and surrounding areas',
+                        'required_skills': ['Oculoplastic Surgery', 'Reconstructive Surgery', 'Cosmetic Surgery', 'Orbital Surgery'],
+                        'salary_range': convert_usd_to_inr('$350,000 - $600,000'),
+                        'growth_prospect': 'High - Specialized eye and facial surgery'
+                    }
+                ]
+            },
+            'medicine_gynecology': {
+                'career_paths': [
+                    {
+                        'title': 'Gynecologist',
+                        'description': 'Provide medical care for women\'s reproductive health',
+                        'required_skills': ['Women\'s Health', 'Reproductive Medicine', 'Preventive Care', 'Gynecologic Surgery'],
+                        'salary_range': convert_usd_to_inr('$250,000 - $450,000'),
+                        'growth_prospect': 'High - Essential women\'s healthcare'
+                    },
+                    {
+                        'title': 'Obstetrician',
+                        'description': 'Provide care for pregnant women and deliver babies',
+                        'required_skills': ['Prenatal Care', 'Labor and Delivery', 'High-Risk Pregnancy', 'Neonatal Care'],
+                        'salary_range': convert_usd_to_inr('$280,000 - $500,000'),
+                        'growth_prospect': 'High - Maternal and newborn care'
+                    },
+                    {
+                        'title': 'Reproductive Endocrinologist',
+                        'description': 'Specialize in fertility and hormonal disorders',
+                        'required_skills': ['Fertility Treatment', 'IVF', 'Hormonal Disorders', 'Reproductive Surgery'],
+                        'salary_range': convert_usd_to_inr('$350,000 - $600,000'),
+                        'growth_prospect': 'High - Growing demand for fertility treatments'
+                    }
+                ]
+            },
+            'medicine_radiology': {
+                'career_paths': [
+                    {
+                        'title': 'Radiologist',
+                        'description': 'Interpret medical images to diagnose and treat diseases',
+                        'required_skills': ['Medical Imaging', 'MRI', 'CT Scans', 'X-rays', 'Image Interpretation'],
+                        'salary_range': convert_usd_to_inr('$350,000 - $550,000'),
+                        'growth_prospect': 'High - Medical imaging is essential for diagnosis'
+                    },
+                    {
+                        'title': 'Interventional Radiologist',
+                        'description': 'Perform minimally invasive procedures guided by imaging',
+                        'required_skills': ['Image-Guided Procedures', 'Angiography', 'Biopsy Techniques', 'Minimally Invasive Surgery'],
+                        'salary_range': convert_usd_to_inr('$400,000 - $650,000'),
+                        'growth_prospect': 'High - Minimally invasive treatments'
+                    },
+                    {
+                        'title': 'Radiation Oncologist',
+                        'description': 'Use radiation therapy to treat cancer',
+                        'required_skills': ['Radiation Therapy', 'Cancer Treatment', 'Treatment Planning', 'Patient Care'],
+                        'salary_range': convert_usd_to_inr('$400,000 - $600,000'),
+                        'growth_prospect': 'High - Cancer treatment demand'
+                    }
+                ]
+            },
+            'medicine_anesthesiology': {
+                'career_paths': [
+                    {
+                        'title': 'Anesthesiologist',
+                        'description': 'Administer anesthesia and monitor patients during surgery',
+                        'required_skills': ['Anesthesia Administration', 'Patient Monitoring', 'Pain Management', 'Critical Care'],
+                        'salary_range': convert_usd_to_inr('$350,000 - $550,000'),
+                        'growth_prospect': 'High - Essential for surgical procedures'
+                    },
+                    {
+                        'title': 'Pain Management Specialist',
+                        'description': 'Diagnose and treat chronic pain conditions',
+                        'required_skills': ['Pain Diagnostics', 'Interventional Procedures', 'Medication Management', 'Patient Education'],
+                        'salary_range': convert_usd_to_inr('$300,000 - $500,000'),
+                        'growth_prospect': 'High - Growing need for pain treatment'
+                    },
+                    {
+                        'title': 'Critical Care Anesthesiologist',
+                        'description': 'Provide intensive care for critically ill patients',
+                        'required_skills': ['Critical Care Medicine', 'Life Support', 'Ventilator Management', 'Emergency Medicine'],
+                        'salary_range': convert_usd_to_inr('$380,000 - $600,000'),
+                        'growth_prospect': 'High - Critical care expertise'
+                    }
+                ]
+            },
+            'business_finance': {
+                'career_paths': [
+                    {
+                        'title': 'Financial Analyst',
+                        'description': 'Analyze financial data to guide business investment decisions',
+                        'required_skills': ['Financial Analysis', 'Investment Management', 'Risk Assessment', 'Corporate Finance'],
+                        'salary_range': convert_usd_to_inr('$60,000 - $120,000'),
+                        'growth_prospect': 'High - Financial insights crucial for business success'
+                    },
+                    {
+                        'title': 'Investment Banker',
+                        'description': 'Help companies raise capital and provide financial advisory services',
+                        'required_skills': ['Corporate Finance', 'Valuation', 'Mergers & Acquisitions', 'Client Relations'],
+                        'salary_range': convert_usd_to_inr('$100,000 - $300,000'),
+                        'growth_prospect': 'High - High earning potential in financial services'
+                    },
+                    {
+                        'title': 'Chief Financial Officer',
+                        'description': 'Lead the financial strategy and operations of an organization',
+                        'required_skills': ['Strategic Planning', 'Financial Management', 'Leadership', 'Regulatory Compliance'],
+                        'salary_range': convert_usd_to_inr('$200,000 - $500,000'),
+                        'growth_prospect': 'Very High - Executive leadership roles in demand'
+                    }
+                ]
+            },
+            'business_marketing': {
+                'career_paths': [
+                    {
+                        'title': 'Digital Marketing Specialist',
+                        'description': 'Create and manage online marketing campaigns across various channels',
+                        'required_skills': ['Digital Marketing', 'SEO', 'Content Strategy', 'Analytics'],
+                        'salary_range': convert_usd_to_inr('$50,000 - $90,000'),
+                        'growth_prospect': 'Very High - Digital marketing is essential for business growth'
+                    },
+                    {
+                        'title': 'Marketing Manager',
+                        'description': 'Lead marketing teams and develop comprehensive marketing strategies',
+                        'required_skills': ['Brand Management', 'Campaign Strategy', 'Team Leadership', 'Budget Management'],
+                        'salary_range': convert_usd_to_inr('$80,000 - $150,000'),
+                        'growth_prospect': 'High - Leadership roles in marketing are in demand'
+                    },
+                    {
+                        'title': 'Chief Marketing Officer',
+                        'description': 'Drive the overall marketing vision and strategy for an organization',
+                        'required_skills': ['Strategic Thinking', 'Brand Leadership', 'Innovation', 'Executive Management'],
+                        'salary_range': convert_usd_to_inr('$150,000 - $400,000'),
+                        'growth_prospect': 'High - C-suite marketing leadership roles'
+                    }
+                ]
+            },
+            'creative_design': {
+                'career_paths': [
+                    {
+                        'title': 'Graphic Designer',
+                        'description': 'Create visual concepts to communicate ideas and information',
+                        'required_skills': ['Adobe Photoshop', 'Illustrator', 'Branding', 'Typography'],
+                        'salary_range': convert_usd_to_inr('$45,000 - $80,000'),
+                        'growth_prospect': 'Stable - Design skills always in demand'
+                    },
+                    {
+                        'title': 'Creative Director',
+                        'description': 'Lead creative teams and guide the artistic direction of projects',
+                        'required_skills': ['Creative Leadership', 'Artistic Vision', 'Team Management', 'Brand Strategy'],
+                        'salary_range': convert_usd_to_inr('$90,000 - $180,000'),
+                        'growth_prospect': 'High - Leadership in creative industries'
+                    },
+                    {
+                        'title': 'Brand Designer',
+                        'description': 'Develop and maintain brand identities for companies and products',
+                        'required_skills': ['Brand Strategy', 'Visual Identity', 'Logo Design', 'Brand Guidelines'],
+                        'salary_range': convert_usd_to_inr('$60,000 - $120,000'),
+                        'growth_prospect': 'High - Branding is crucial for business success'
+                    }
+                ]
             }
         }
         
-        # Get appropriate response or use software development as default
-        response_data = domain_responses.get(primary_domain, domain_responses['software_development'])
+        # Get appropriate response or randomly select from available domains to ensure variety
+        if primary_domain in domain_responses:
+            response_data = domain_responses[primary_domain]
+        else:
+            # If domain not in our predefined responses, randomly select one to ensure variety
+            available_domains = list(domain_responses.keys())
+            random_domain = random.choice(available_domains)
+            response_data = domain_responses[random_domain]
+        
+        # Randomly select one of the career paths as the selected path to ensure variety
+        selected_path_index = random.randint(0, len(response_data['career_paths']) - 1)
+        selected_path = response_data['career_paths'][selected_path_index]
+        
+        # Personalize the roadmap based on expertise level
+        expertise_level = expertise.lower()
+        if 'beginner' in expertise_level:
+            duration_multiplier = 1.5
+            difficulty_modifier = 'Beginner'
+        elif 'intermediate' in expertise_level:
+            duration_multiplier = 1.0
+            difficulty_modifier = 'Intermediate'
+        elif 'advanced' in expertise_level:
+            duration_multiplier = 0.7
+            difficulty_modifier = 'Advanced'
+        else:
+            duration_multiplier = 1.0
+            difficulty_modifier = 'Intermediate'
+        
+        # Adjust roadmap steps based on expertise
+        personalized_roadmap = [
+            {
+                'step': 1,
+                'title': 'Skill Assessment and Gap Analysis',
+                'description': f'Evaluate your current {skills} skills and identify areas for improvement based on your {expertise} level',
+                'duration': f'{int(2*duration_multiplier)}-{int(4*duration_multiplier)} weeks',
+                'resources': [f'{skills} assessments', 'Portfolio review', f'{skills} industry research']
+            },
+            {
+                'step': 2,
+                'title': f'Learn Core {skills.title()} Technologies',
+                'description': f'Master the fundamental {skills} technologies appropriate for your {expertise} level',
+                'duration': f'{int(3*duration_multiplier)}-{int(6*duration_multiplier)} months',
+                'resources': [f'{skills} online courses', f'{skills} documentation', f'{skills} practice projects']
+            },
+            {
+                'step': 3,
+                'title': 'Build Portfolio Projects',
+                'description': f'Create impressive {skills} projects that demonstrate your {expertise} level skills to employers',
+                'duration': f'{int(2*duration_multiplier)}-{int(4*duration_multiplier)} months',
+                'resources': ['GitHub', 'Personal website', f'{skills} case studies']
+            },
+            {
+                'step': 4,
+                'title': 'Network and Gain Experience',
+                'description': f'Connect with {skills} professionals and gain real-world experience appropriate for your {expertise} level',
+                'duration': f'{int(3*duration_multiplier)}-{int(6*duration_multiplier)} months',
+                'resources': ['LinkedIn', f'{skills} meetups', 'Open source contributions', 'Internships']
+            },
+            {
+                'step': 5,
+                'title': 'Job Search and Interview Preparation',
+                'description': f'Prepare for {skills} interviews and start applying to positions matching your {expertise} level',
+                'duration': f'{int(1*duration_multiplier)}-{int(3*duration_multiplier)} months',
+                'resources': [f'{skills} interview practice', 'Resume optimization', f'{skills} job boards', 'Referrals']
+            }
+        ]
+        
+        # Personalize courses based on skills and expertise
+        personalized_courses = [
+            {
+                'title': f'Complete {skills.title()} Course for {difficulty_modifier}s',
+                'provider': 'YouTube',
+                'duration': f'{int(12*duration_multiplier)} weeks',
+                'difficulty': difficulty_modifier,
+                'url': f'https://www.youtube.com/results?search_query={skills.replace(" ", "+")}+course+for+{difficulty_modifier}'
+            },
+            {
+                'title': f'{skills.title()} Fundamentals Tutorial',
+                'provider': 'YouTube',
+                'duration': f'{int(8*duration_multiplier)} weeks',
+                'difficulty': difficulty_modifier,
+                'url': f'https://www.youtube.com/results?search_query={skills.replace(" ", "+")}+fundamentals+tutorial'
+            },
+            {
+                'title': f'Advanced {skills.title()} Techniques',
+                'provider': 'YouTube',
+                'duration': f'{int(10*duration_multiplier)} weeks',
+                'difficulty': 'Advanced' if difficulty_modifier != 'Beginner' else 'Intermediate',
+                'url': f'https://www.youtube.com/results?search_query=advanced+{skills.replace(" ", "+")}+techniques'
+            },
+            {
+                'title': f'{skills.title()} Best Practices Guide',
+                'provider': 'YouTube',
+                'duration': f'{int(6*duration_multiplier)} weeks',
+                'difficulty': difficulty_modifier,
+                'url': f'https://www.youtube.com/results?search_query={skills.replace(" ", "+")}+best+practices'
+            },
+            {
+                'title': f'{skills.title()} Certification Preparation',
+                'provider': 'YouTube',
+                'duration': f'{int(4*duration_multiplier)} weeks',
+                'difficulty': 'Intermediate' if difficulty_modifier != 'Advanced' else 'Advanced',
+                'url': f'https://www.youtube.com/results?search_query={skills.replace(" ", "+")}+certification+preparation'
+            }
+        ]
+        
+        # Personalize certifications based on skills
+        personalized_certifications = [
+            {
+                'name': f'Professional {skills.title()} Certification',
+                'provider': 'Industry Association',
+                'description': f'Demonstrate your expertise in {skills} appropriate for your {expertise} level',
+                'difficulty': difficulty_modifier,
+                'duration': f'{int(3*duration_multiplier)} months',
+                'url': f'https://certification.example.com/{skills.replace(" ", "-")}'
+            },
+            {
+                'name': f'{skills.title()} Specialist Certification',
+                'provider': 'Technology Vendor',
+                'description': f'Validate your knowledge of {skills} technologies and best practices',
+                'difficulty': 'Intermediate' if difficulty_modifier != 'Advanced' else 'Advanced',
+                'duration': f'{int(4*duration_multiplier)} months',
+                'url': f'https://vendor.example.com/{skills.replace(" ", "-")}-certification'
+            },
+            {
+                'name': f'Advanced {skills.title()} Certification',
+                'provider': 'Professional Institute',
+                'description': f'Prove your advanced skills in {skills} design and implementation',
+                'difficulty': 'Advanced',
+                'duration': f'{int(5*duration_multiplier)} months',
+                'url': f'https://institute.example.com/advanced-{skills.replace(" ", "-")}'
+            }
+        ]
         
         return {
             'career_paths': response_data['career_paths'],
-            'selected_path': response_data['selected_path'],
-            'roadmap': [
-                {
-                    'step': 1,
-                    'title': 'Skill Assessment and Gap Analysis',
-                    'description': 'Evaluate your current skills and identify areas for improvement',
-                    'duration': '2-4 weeks',
-                    'resources': ['Online assessments', 'Portfolio review', 'Industry research']
-                },
-                {
-                    'step': 2,
-                    'title': 'Learn Core Technologies',
-                    'description': 'Master the fundamental technologies for your chosen career path',
-                    'duration': '3-6 months',
-                    'resources': ['Online courses', 'Documentation', 'Practice projects']
-                },
-                {
-                    'step': 3,
-                    'title': 'Build Portfolio Projects',
-                    'description': 'Create impressive projects that demonstrate your skills to employers',
-                    'duration': '2-4 months',
-                    'resources': ['GitHub', 'Personal website', 'Case studies']
-                },
-                {
-                    'step': 4,
-                    'title': 'Network and Gain Experience',
-                    'description': 'Connect with professionals and gain real-world experience',
-                    'duration': '3-6 months',
-                    'resources': ['LinkedIn', 'Tech meetups', 'Open source contributions', 'Internships']
-                },
-                {
-                    'step': 5,
-                    'title': 'Job Search and Interview Preparation',
-                    'description': 'Prepare for interviews and start applying to positions',
-                    'duration': '1-3 months',
-                    'resources': ['Interview practice', 'Resume optimization', 'Job boards', 'Referrals']
-                }
-            ],
-            'courses': [
-                {
-                    'title': 'The Complete Web Developer Course',
-                    'provider': 'Udemy',
-                    'duration': '12 weeks',
-                    'difficulty': 'Beginner',
-                    'url': 'https://www.udemy.com/course/the-complete-web-development-bootcamp/'
-                },
-                {
-                    'title': 'CS50\'s Introduction to Computer Science',
-                    'provider': 'Harvard (edX)',
-                    'duration': '10 weeks',
-                    'difficulty': 'Beginner',
-                    'url': 'https://www.edx.org/course/introduction-computer-science-harvardx-cs50x'
-                },
-                {
-                    'title': 'Python for Everybody Specialization',
-                    'provider': 'University of Michigan (Coursera)',
-                    'duration': '8 weeks',
-                    'difficulty': 'Beginner',
-                    'url': 'https://www.coursera.org/specializations/python'
-                },
-                {
-                    'title': 'JavaScript Algorithms and Data Structures',
-                    'provider': 'freeCodeCamp',
-                    'duration': '6 weeks',
-                    'difficulty': 'Intermediate',
-                    'url': 'https://www.freecodecamp.org/learn/javascript-algorithms-and-data-structures/'
-                },
-                {
-                    'title': 'AWS Cloud Practitioner',
-                    'provider': 'Amazon Web Services',
-                    'duration': '4 weeks',
-                    'difficulty': 'Beginner',
-                    'url': 'https://aws.amazon.com/training/learn-about/cloud-practitioner/'
-                }
-            ]
+            'selected_path': selected_path,
+            'roadmap': personalized_roadmap,
+            'courses': personalized_courses,
+            'certifications': personalized_certifications
         }
 
     def generate_mock_test(self, skills: str, expertise: str, topic: str = "", user_id: str = "") -> Dict[str, Any]:
@@ -933,7 +1791,7 @@ Make this roadmap actionable, specific, and tailored to their current skill leve
         questions = None
         
         # Try Vertex AI first if available
-        if self.vertex_ai_available and self.model:
+        if self.vertex_ai_available and self.model and hasattr(self.model, 'generate_content'):
             try:
                 response = self.model.generate_content(prompt)
                 response_text = response.text
@@ -967,730 +1825,35 @@ Make this roadmap actionable, specific, and tailored to their current skill leve
                         questions_data = json.loads(json_str)
                         questions = [MockTestQuestion(**q) for q in questions_data]
                 except Exception as e:
-                    print(f"Error parsing AI mock test response: {e}")
+                    print(f"Error parsing AI response: {e}")
         
-        # Fallback to static questions if all AI services failed
+        # If all AI services fail, create a fallback response
         if not questions:
-            print("📝 Using enhanced static mock test")
-            questions = self._create_enhanced_fallback_test(skills, expertise, topic)
-        
-        # Generate test ID
-        test_id = f"test_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{hash(skills + expertise) % 10000}"
-        
-        # Prepare test data
-        test_data = {
-            "test_id": test_id,
-            "skills": skills,
-            "expertise": expertise,
-            "topic": topic,
-            "user_id": user_id,
-            "questions": [q.dict() for q in questions],
-            "created_at": datetime.now().isoformat(),
-            "timestamp": datetime.now().isoformat()
-        }
-        
-        # Save to Firestore with proper error handling
-        try:
-            if hasattr(self, 'firestore_client') and self.firestore_client:
-                doc_ref = self.firestore_client.collection('mock_tests').document(test_id)
-                doc_ref.set(test_data)
-                print(f"Mock test saved to Firestore with ID: {test_id}")
-            else:
-                print(f"Warning: Firestore not available. Mock test not saved: {test_id}")
-        except Exception as e:
-            print(f"Error saving to Firestore: {e}")
+            print("Using static mock test fallback")
+            questions = [
+                MockTestQuestion(
+                    question="What is the importance of continuous learning in your field?",
+                    answer="Continuous learning is essential in today's rapidly evolving professional landscape. It helps professionals stay updated with the latest technologies, methodologies, and industry best practices. This ongoing education ensures competitiveness, adaptability, and career growth."
+                ),
+                MockTestQuestion(
+                    question="How do you approach problem-solving in your domain?",
+                    answer="Effective problem-solving involves several key steps: 1) Clearly defining the problem, 2) Gathering relevant information, 3) Generating multiple potential solutions, 4) Evaluating each option, 5) Selecting and implementing the best solution, and 6) Reviewing the results. This systematic approach ensures thorough analysis and better outcomes."
+                ),
+                MockTestQuestion(
+                    question="What role does collaboration play in professional success?",
+                    answer="Collaboration is crucial for professional success as it enables knowledge sharing, diverse perspectives, and collective problem-solving. Working effectively with others enhances creativity, improves decision-making, and leads to more innovative solutions. Strong collaboration skills also build professional networks and career opportunities."
+                ),
+                MockTestQuestion(
+                    question="How do you stay current with industry trends and developments?",
+                    answer="Staying current requires a multi-faceted approach: following industry publications and blogs, participating in professional associations, attending conferences and webinars, engaging in online communities, taking continuing education courses, and networking with peers. Regularly dedicating time to these activities ensures ongoing professional development."
+                ),
+                MockTestQuestion(
+                    question="What strategies do you use for career planning and goal setting?",
+                    answer="Effective career planning involves: 1) Self-assessment of skills, interests, and values, 2) Researching career paths and opportunities, 3) Setting SMART goals (Specific, Measurable, Achievable, Relevant, Time-bound), 4) Creating actionable development plans, 5) Building relevant networks, 6) Regularly reviewing and adjusting plans based on progress and changing circumstances. This structured approach provides direction and motivation."
+                )
+            ]
         
         return {
-            "test_id": test_id,
-            "questions": [q.dict() for q in questions],
-            "user_id": user_id,
-            "created_at": test_data["created_at"]
+            "questions": questions,
+            "generated_at": datetime.now().isoformat()
         }
-    
-    def _create_enhanced_fallback_test(self, skills: str, expertise: str, topic: str = "") -> List[MockTestQuestion]:
-        """Create enhanced fallback mock test questions based on user skills and topic"""
-        
-        skills_lower = skills.lower()
-        topic_lower = topic.lower() if topic else ""
-        
-        # Determine question type based on skills and topic
-        if any(skill in skills_lower for skill in ['python', 'programming']) or 'python' in topic_lower:
-            return self._create_python_test_questions(expertise)
-        elif any(skill in skills_lower for skill in ['javascript', 'js', 'react', 'frontend']) or 'javascript' in topic_lower:
-            return self._create_javascript_test_questions(expertise)
-        elif any(skill in skills_lower for skill in ['data', 'analytics', 'sql', 'database']) or 'data' in topic_lower:
-            return self._create_data_science_test_questions(expertise)
-        elif any(skill in skills_lower for skill in ['design', 'ui', 'ux']) or 'design' in topic_lower:
-            return self._create_design_test_questions(expertise)
-        else:
-            return self._create_general_tech_test_questions(expertise)
-    
-    def _create_python_test_questions(self, expertise: str) -> List[MockTestQuestion]:
-        """Create Python-specific test questions"""
-        if expertise.lower() in ['advanced', 'expert']:
-            return [
-                MockTestQuestion(
-                    question="What is the difference between __str__ and __repr__ methods in Python classes?",
-                    answer="__str__ is meant to be readable and is called by str() and print(). __repr__ is meant to be unambiguous and is called by repr(). __repr__ should ideally return a string that could recreate the object."
-                ),
-                MockTestQuestion(
-                    question="Explain Python's Global Interpreter Lock (GIL) and its impact on multithreading.",
-                    answer="The GIL prevents multiple native threads from executing Python bytecodes simultaneously. This means CPU-bound programs won't benefit from multithreading, but I/O-bound programs can still benefit. Use multiprocessing for CPU-bound tasks."
-                ),
-                MockTestQuestion(
-                    question="What are Python decorators and how do they work internally?",
-                    answer="Decorators are functions that modify other functions. They use closure to wrap the original function. @decorator is syntactic sugar for func = decorator(func). They're useful for logging, authentication, caching, etc."
-                ),
-                MockTestQuestion(
-                    question="Explain the difference between deep copy and shallow copy in Python.",
-                    answer="Shallow copy creates a new object but inserts references to objects in the original. Deep copy creates new objects recursively. Use copy.copy() for shallow and copy.deepcopy() for deep copying."
-                ),
-                MockTestQuestion(
-                    question="How does Python's memory management work?",
-                    answer="Python uses reference counting plus cycle detection for garbage collection. Objects are deleted when reference count reaches zero. Cycle detector handles circular references that reference counting can't resolve."
-                )
-            ]
-        else:
-            return [
-                MockTestQuestion(
-                    question="What is the difference between a list and a tuple in Python?",
-                    answer="Lists are mutable (can be changed) and use square brackets []. Tuples are immutable (cannot be changed) and use parentheses (). Lists are better for data that changes, tuples for fixed data."
-                ),
-                MockTestQuestion(
-                    question="How do you handle exceptions in Python?",
-                    answer="Use try-except blocks. Put risky code in 'try', handle errors in 'except'. You can catch specific exceptions or use 'except Exception' for general errors. Always include meaningful error messages."
-                ),
-                MockTestQuestion(
-                    question="What is a Python function and how do you define one?",
-                    answer="A function is a reusable block of code. Define with 'def function_name(parameters):' followed by indented code. Functions can return values using 'return' and accept parameters to work with different data."
-                ),
-                MockTestQuestion(
-                    question="Explain Python dictionaries and their use cases.",
-                    answer="Dictionaries store key-value pairs using curly braces {}. Keys must be unique and immutable. They're perfect for mapping relationships, caching, and when you need fast lookups by key."
-                ),
-                MockTestQuestion(
-                    question="What are Python loops and when would you use each type?",
-                    answer="'for' loops iterate over sequences (lists, strings, ranges). 'while' loops continue until a condition is false. Use 'for' when you know the iterations, 'while' for conditional repetition."
-                )
-            ]
-    
-    def _create_javascript_test_questions(self, expertise: str) -> List[MockTestQuestion]:
-        """Create JavaScript-specific test questions"""
-        if expertise.lower() in ['advanced', 'expert']:
-            return [
-                MockTestQuestion(
-                    question="Explain JavaScript's event loop and how asynchronous operations work.",
-                    answer="The event loop handles async operations by moving callbacks to a queue when async operations complete. It continuously checks if the call stack is empty, then processes queued callbacks. This enables non-blocking I/O."
-                ),
-                MockTestQuestion(
-                    question="What is closure in JavaScript and provide a practical example.",
-                    answer="Closure is when an inner function has access to outer function's variables even after the outer function returns. Example: function outer(x) { return function(y) { return x + y; }; } - the inner function 'closes over' x."
-                ),
-                MockTestQuestion(
-                    question="Explain the difference between 'this' in regular functions vs arrow functions.",
-                    answer="Regular functions have dynamic 'this' based on how they're called. Arrow functions inherit 'this' from enclosing scope (lexical this). Arrow functions can't be used as constructors and don't have their own 'this'."
-                ),
-                MockTestQuestion(
-                    question="What are JavaScript Promises and how do they handle async operations?",
-                    answer="Promises represent eventual completion of async operations. They have three states: pending, fulfilled, rejected. Use .then() for success, .catch() for errors, .finally() for cleanup. Better than callbacks for avoiding callback hell."
-                ),
-                MockTestQuestion(
-                    question="Explain prototype inheritance in JavaScript.",
-                    answer="Every object has a prototype chain. When accessing a property, JS looks up the chain until found. Objects inherit from Object.prototype by default. Use Object.create() or class syntax for inheritance."
-                )
-            ]
-        else:
-            return [
-                MockTestQuestion(
-                    question="What is the difference between 'let', 'const', and 'var' in JavaScript?",
-                    answer="'var' is function-scoped and hoisted. 'let' and 'const' are block-scoped. 'const' cannot be reassigned after declaration. Use 'const' by default, 'let' when you need to reassign, avoid 'var'."
-                ),
-                MockTestQuestion(
-                    question="How do you create and manipulate arrays in JavaScript?",
-                    answer="Create arrays with [] or new Array(). Common methods: push() adds to end, pop() removes from end, shift()/unshift() for beginning, slice() for copying portions, splice() for adding/removing elements."
-                ),
-                MockTestQuestion(
-                    question="What are JavaScript functions and different ways to declare them?",
-                    answer="Functions are reusable code blocks. Declare with: function name() {}, const name = function() {}, const name = () => {}. Arrow functions are shorter and don't have their own 'this'."
-                ),
-                MockTestQuestion(
-                    question="How do you work with objects in JavaScript?",
-                    answer="Objects store key-value pairs. Create with {} or new Object(). Access properties with dot notation (obj.key) or brackets (obj['key']). Add/modify properties by assignment."
-                ),
-                MockTestQuestion(
-                    question="What is DOM manipulation and how do you select elements?",
-                    answer="DOM manipulation changes HTML elements with JavaScript. Select elements using document.getElementById(), querySelector(), getElementsByClassName(). Modify with innerHTML, textContent, style properties."
-                )
-            ]
-    
-    def _create_data_science_test_questions(self, expertise: str) -> List[MockTestQuestion]:
-        """Create data science-specific test questions"""
-        return [
-            MockTestQuestion(
-                question="What is the difference between supervised and unsupervised learning?",
-                answer="Supervised learning uses labeled data to train models for prediction (classification/regression). Unsupervised learning finds patterns in unlabeled data (clustering, dimensionality reduction)."
-            ),
-            MockTestQuestion(
-                question="Explain what SQL JOINs are and when to use different types.",
-                answer="JOINs combine data from multiple tables. INNER JOIN returns matching records. LEFT JOIN returns all left table records plus matches. RIGHT JOIN returns all right table records plus matches. FULL JOIN returns all records."
-            ),
-            MockTestQuestion(
-                question="What is data normalization and why is it important?",
-                answer="Data normalization scales features to similar ranges (0-1 or standard normal). It's important because algorithms like neural networks and k-means are sensitive to feature scales, and it improves convergence and performance."
-            ),
-            MockTestQuestion(
-                question="Explain the bias-variance tradeoff in machine learning.",
-                answer="Bias is error from oversimplifying assumptions. Variance is error from model sensitivity to training data. High bias = underfitting, high variance = overfitting. Goal is finding optimal balance for best generalization."
-            ),
-            MockTestQuestion(
-                question="What are some common data visualization best practices?",
-                answer="Choose appropriate chart types for data. Use clear labels and titles. Avoid 3D charts and pie charts with many categories. Ensure accessibility with colorblind-friendly palettes. Start y-axis at zero for bar charts."
-            )
-        ]
-    
-    def _create_design_test_questions(self, expertise: str) -> List[MockTestQuestion]:
-        """Create design-specific test questions"""
-        return [
-            MockTestQuestion(
-                question="What are the key principles of good user interface design?",
-                answer="Key principles include: consistency, clarity, efficiency, forgiveness (easy to undo), accessibility, user control, and feedback. Focus on user needs, maintain visual hierarchy, and reduce cognitive load."
-            ),
-            MockTestQuestion(
-                question="Explain the difference between UX and UI design.",
-                answer="UX (User Experience) focuses on overall user journey, research, and problem-solving. UI (User Interface) focuses on visual design, layouts, and interactions. UX is strategy, UI is implementation."
-            ),
-            MockTestQuestion(
-                question="What is color theory and how does it apply to digital design?",
-                answer="Color theory studies how colors interact. Use complementary colors for contrast, analogous for harmony. Consider color psychology and accessibility. Maintain sufficient contrast ratios (4.5:1 for normal text)."
-            ),
-            MockTestQuestion(
-                question="What is typography and what makes good typography in digital interfaces?",
-                answer="Typography is the art of arranging text. Good digital typography uses readable fonts, appropriate sizes (16px+ for body), proper line spacing (1.4-1.6), adequate contrast, and hierarchy through size and weight."
-            ),
-            MockTestQuestion(
-                question="Explain responsive design principles.",
-                answer="Responsive design adapts to different screen sizes. Use flexible grids, scalable images, and CSS media queries. Follow mobile-first approach, design for touch interfaces, and ensure content remains accessible across devices."
-            )
-        ]
-    
-    def _create_general_tech_test_questions(self, expertise: str) -> List[MockTestQuestion]:
-        """Create general technology test questions"""
-        return [
-            MockTestQuestion(
-                question="What is version control and why is it important in software development?",
-                answer="Version control tracks changes to code over time. It enables collaboration, backup, branching for features, and rollback to previous versions. Git is the most popular system, enabling distributed development."
-            ),
-            MockTestQuestion(
-                question="Explain the difference between frontend and backend development.",
-                answer="Frontend handles user interface and user experience (HTML, CSS, JavaScript). Backend handles server logic, databases, and APIs (Python, Java, Node.js). They communicate through APIs to create complete applications."
-            ),
-            MockTestQuestion(
-                question="What is an API and how do RESTful APIs work?",
-                answer="API (Application Programming Interface) allows applications to communicate. REST uses HTTP methods (GET, POST, PUT, DELETE) with stateless requests. Returns data in JSON format with proper status codes."
-            ),
-            MockTestQuestion(
-                question="What are the key principles of good software architecture?",
-                answer="Key principles include: modularity, separation of concerns, loose coupling, high cohesion, scalability, maintainability, and following design patterns. Good architecture makes code easier to understand, test, and modify."
-            ),
-            MockTestQuestion(
-                question="Explain the importance of testing in software development.",
-                answer="Testing ensures code works correctly and prevents bugs. Types include unit tests (individual functions), integration tests (component interaction), and end-to-end tests (full user workflows). Automated testing saves time and improves reliability."
-            )
-        ]
-    
-    def extract_skills_from_message(self, message: str, current_skills: str = "") -> Dict[str, Any]:
-        """Extract and merge skills from user message using available AI services with fallbacks"""
-        
-        prompt = f"""
-        A user has shared information about their learning or skills. Please extract any technical skills, technologies, programming languages, tools, or professional competencies mentioned.
-        
-        User message: "{message}"
-        Current skills: "{current_skills}"
-        
-        Please provide a JSON response with the following structure:
-        {{
-            "extracted_skills": ["skill1", "skill2", "skill3"],
-            "updated_skills": "merged and deduplicated list of all skills as a comma-separated string",
-            "bot_response": "A friendly response acknowledging what the user learned and encouraging them"
-        }}
-        
-        Rules:
-        1. Extract only actual skills, technologies, or competencies
-        2. Merge with existing skills, avoiding duplicates
-        3. Keep the response encouraging and supportive
-        4. If no new skills are found, return empty extracted_skills array but still provide a helpful response
-        """
-
-        # Try Vertex AI first if available
-        if self.vertex_ai_available and self.model:
-            try:
-                response = self.model.generate_content(prompt)
-                response_text = response.text
-                
-                # Try to find JSON in the response
-                start_idx = response_text.find('{')
-                end_idx = response_text.rfind('}') + 1
-                
-                if start_idx != -1 and end_idx != -1:
-                    json_str = response_text[start_idx:end_idx]
-                    result = json.loads(json_str)
-                    print("✅ Extracted skills using Vertex AI")
-                    return result
-                    
-            except Exception as e:
-                print(f"Vertex AI skill extraction failed: {e}")
-        
-        # Try fallback AI services
-        ai_response = self._generate_with_fallback_ai(prompt)
-        if ai_response:
-            try:
-                # Try to extract JSON from AI response
-                start_idx = ai_response.find('{')
-                end_idx = ai_response.rfind('}') + 1
-                
-                if start_idx != -1 and end_idx != -1:
-                    json_str = ai_response[start_idx:end_idx]
-                    return json.loads(json_str)
-            except Exception as e:
-                print(f"Error parsing AI skill extraction response: {e}")
-        
-        # Fallback to static response
-        print("🔍 Using enhanced static skill extraction")
-        return self._create_enhanced_fallback_skill_response(message, current_skills)
-    
-    def _create_enhanced_fallback_skill_response(self, message: str, current_skills: str) -> Dict[str, Any]:
-        """Create an enhanced fallback response for skill extraction using pattern matching"""
-        
-        # Use the same pattern matching as _extract_skills_fallback
-        result = self._extract_skills_fallback(message)
-        extracted_skills_data = result.get("extracted_skills", [])
-        
-        # Convert to skill names only for merging
-        extracted_skills = [skill["skill"] for skill in extracted_skills_data]
-        
-        # Merge with current skills
-        current_skills_list = [skill.strip() for skill in current_skills.split(",") if skill.strip()] if current_skills else []
-        all_skills = current_skills_list + extracted_skills
-        
-        # Remove duplicates while preserving order
-        seen = set()
-        unique_skills = []
-        for skill in all_skills:
-            skill_lower = skill.lower()
-            if skill_lower not in seen:
-                seen.add(skill_lower)
-                unique_skills.append(skill)
-        
-        updated_skills = ", ".join(unique_skills)
-        
-        # Generate encouraging response based on extracted skills
-        if extracted_skills:
-            if len(extracted_skills) == 1:
-                bot_response = f"Great job learning {extracted_skills[0]}! That's a valuable skill that will serve you well in your career journey. Keep up the excellent work! 🚀"
-            else:
-                skills_text = ", ".join(extracted_skills[:-1]) + f" and {extracted_skills[-1]}"
-                bot_response = f"Wow, you've been busy! Learning {skills_text} shows real dedication to your professional growth. These skills will definitely boost your career prospects! 🎆"
-        else:
-            # Encouraging response even when no skills detected
-            encouraging_responses = [
-                "Thanks for sharing! I'm here to help you track your learning journey. Feel free to tell me about any new skills, technologies, or courses you've been working on! 📚",
-                "I love hearing about your progress! Whether it's coding, design, or any other skills, I'm here to help you map out your career path. What would you like to explore next? 🎯",
-                "Your dedication to learning is inspiring! Keep me updated on any new technologies or skills you pick up - I'll help you see how they fit into your career growth! ✨",
-                "Every learning step counts towards your goals! Feel free to share any courses, tutorials, or projects you're working on. I'm here to support your journey! 🌱"
-            ]
-            import random
-            bot_response = random.choice(encouraging_responses)
-        
-        return {
-            "extracted_skills": extracted_skills,
-            "updated_skills": updated_skills,
-            "bot_response": bot_response
-        }
-    
-    def extract_skills_with_levels(self, message: str) -> Dict[str, Any]:
-        """Extract skills and expertise levels from message using available AI services with fallbacks"""
-        
-        prompt = f"""
-        Extract all new skills and expertise levels mentioned in this message: "{message}"
-        
-        Return a JSON array with the following structure:
-        [
-          {{"skill": "skill name", "expertise_level": "beginner/intermediate/advanced/expert"}},
-          {{"skill": "skill name", "expertise_level": "beginner/intermediate/advanced/expert"}}
-        ]
-        
-        Rules:
-        1. Extract only actual technical skills, programming languages, tools, or professional competencies
-        2. Infer the expertise level from context (if someone "learned" something = beginner, "worked with" = intermediate, "mastered" = advanced, etc.)
-        3. If no level is mentioned, default to "beginner" for new learning, "intermediate" for general experience
-        4. Return empty array if no skills are found
-        5. Skills should be properly formatted (e.g., "JavaScript", "React", "Python", "SQL")
-        """
-
-        # Try Vertex AI first if available
-        if self.vertex_ai_available and self.model:
-            try:
-                response = self.model.generate_content(prompt)
-                response_text = response.text
-                
-                # Try to find JSON in the response
-                start_idx = response_text.find('[')
-                end_idx = response_text.rfind(']') + 1
-                
-                if start_idx != -1 and end_idx != -1:
-                    json_str = response_text[start_idx:end_idx]
-                    extracted_skills = json.loads(json_str)
-                    print("✅ Extracted skills with levels using Vertex AI")
-                    return {"extracted_skills": extracted_skills}
-                    
-            except Exception as e:
-                print(f"Vertex AI skill level extraction failed: {e}")
-        
-        # Try fallback AI services
-        ai_response = self._generate_with_fallback_ai(prompt)
-        if ai_response:
-            try:
-                # Try to extract JSON from AI response
-                start_idx = ai_response.find('[')
-                end_idx = ai_response.rfind(']') + 1
-                
-                if start_idx != -1 and end_idx != -1:
-                    json_str = ai_response[start_idx:end_idx]
-                    extracted_skills = json.loads(json_str)
-                    return {"extracted_skills": extracted_skills}
-            except Exception as e:
-                print(f"Error parsing AI skill level extraction response: {e}")
-        
-        # Fallback to static extraction
-        print("🎯 Using enhanced static skill level extraction")
-        return self._extract_skills_fallback(message)
-    
-    def _extract_skills_fallback(self, message: str) -> Dict[str, Any]:
-        """Enhanced fallback skill extraction supporting ALL programming languages and skills"""
-        # Comprehensive technical skills and tools database
-        skill_patterns = {
-            # Programming Languages (ALL major languages)
-            'python': 'Python',
-            'javascript': 'JavaScript',
-            'java': 'Java',
-            'c#': 'C#',
-            'csharp': 'C#',
-            'c++': 'C++',
-            'cpp': 'C++',
-            'c': 'C',
-            'typescript': 'TypeScript',
-            'php': 'PHP',
-            'ruby': 'Ruby',
-            'go': 'Go',
-            'golang': 'Go',
-            'rust': 'Rust',
-            'swift': 'Swift',
-            'kotlin': 'Kotlin',
-            'scala': 'Scala',
-            'r': 'R',
-            'matlab': 'MATLAB',
-            'perl': 'Perl',
-            'bash': 'Bash',
-            'shell': 'Shell Scripting',
-            'powershell': 'PowerShell',
-            'lua': 'Lua',
-            'dart': 'Dart',
-            'objective-c': 'Objective-C',
-            'assembly': 'Assembly',
-            'fortran': 'Fortran',
-            'cobol': 'COBOL',
-            'haskell': 'Haskell',
-            'erlang': 'Erlang',
-            'elixir': 'Elixir',
-            'clojure': 'Clojure',
-            'f#': 'F#',
-            'vb.net': 'VB.NET',
-            'solidity': 'Solidity',
-            'julia': 'Julia',
-            'nim': 'Nim',
-            'crystal': 'Crystal',
-            'zig': 'Zig',
-            
-            # Frontend Technologies & Frameworks
-            'html': 'HTML',
-            'html5': 'HTML5',
-            'css': 'CSS',
-            'css3': 'CSS3',
-            'sass': 'SASS',
-            'scss': 'SCSS',
-            'less': 'LESS',
-            'bootstrap': 'Bootstrap',
-            'tailwind': 'Tailwind CSS',
-            'bulma': 'Bulma',
-            'materialize': 'Materialize',
-            'foundation': 'Foundation',
-            'react': 'React',
-            'vue': 'Vue.js',
-            'angular': 'Angular',
-            'svelte': 'Svelte',
-            'ember': 'Ember.js',
-            'backbone': 'Backbone.js',
-            'jquery': 'jQuery',
-            'alpine': 'Alpine.js',
-            'stimulus': 'Stimulus',
-            'lit': 'Lit',
-            'web components': 'Web Components',
-            'pwa': 'Progressive Web Apps',
-            
-            # Backend Technologies & Frameworks
-            'node.js': 'Node.js',
-            'nodejs': 'Node.js',
-            'express': 'Express.js',
-            'fastify': 'Fastify',
-            'koa': 'Koa.js',
-            'nest': 'NestJS',
-            'django': 'Django',
-            'flask': 'Flask',
-            'fastapi': 'FastAPI',
-            'pyramid': 'Pyramid',
-            'tornado': 'Tornado',
-            'spring': 'Spring Framework',
-            'spring boot': 'Spring Boot',
-            'laravel': 'Laravel',
-            'symfony': 'Symfony',
-            'codeigniter': 'CodeIgniter',
-            'rails': 'Ruby on Rails',
-            'sinatra': 'Sinatra',
-            'gin': 'Gin',
-            'echo': 'Echo',
-            'fiber': 'Fiber',
-            'asp.net': 'ASP.NET',
-            'asp.net core': 'ASP.NET Core',
-            'blazor': 'Blazor',
-            'actix': 'Actix Web',
-            'rocket': 'Rocket',
-            'vapor': 'Vapor',
-            
-            # Mobile Development
-            'react native': 'React Native',
-            'flutter': 'Flutter',
-            'ionic': 'Ionic',
-            'cordova': 'Apache Cordova',
-            'phonegap': 'PhoneGap',
-            'xamarin': 'Xamarin',
-            'android': 'Android Development',
-            'ios': 'iOS Development',
-            'swift ui': 'SwiftUI',
-            'uikit': 'UIKit',
-            'android studio': 'Android Studio',
-            'xcode': 'Xcode',
-            
-            # Databases & Data Storage
-            'sql': 'SQL',
-            'mysql': 'MySQL',
-            'postgresql': 'PostgreSQL',
-            'sqlite': 'SQLite',
-            'mariadb': 'MariaDB',
-            'oracle': 'Oracle Database',
-            'sql server': 'SQL Server',
-            'mongodb': 'MongoDB',
-            'couchdb': 'CouchDB',
-            'redis': 'Redis',
-            'elasticsearch': 'Elasticsearch',
-            'cassandra': 'Cassandra',
-            'dynamodb': 'DynamoDB',
-            'firestore': 'Firestore',
-            'neo4j': 'Neo4j',
-            'influxdb': 'InfluxDB',
-            'timescaledb': 'TimescaleDB',
-            
-            # DevOps & Infrastructure
-            'docker': 'Docker',
-            'kubernetes': 'Kubernetes',
-            'helm': 'Helm',
-            'terraform': 'Terraform',
-            'ansible': 'Ansible',
-            'puppet': 'Puppet',
-            'chef': 'Chef',
-            'vagrant': 'Vagrant',
-            'jenkins': 'Jenkins',
-            'gitlab ci': 'GitLab CI',
-            'github actions': 'GitHub Actions',
-            'circleci': 'CircleCI',
-            'travis ci': 'Travis CI',
-            'aws': 'Amazon Web Services',
-            'azure': 'Microsoft Azure',
-            'gcp': 'Google Cloud Platform',
-            'digitalocean': 'DigitalOcean',
-            'heroku': 'Heroku',
-            'vercel': 'Vercel',
-            'netlify': 'Netlify',
-            
-            # Machine Learning & AI
-            'machine learning': 'Machine Learning',
-            'artificial intelligence': 'Artificial Intelligence',
-            'deep learning': 'Deep Learning',
-            'neural networks': 'Neural Networks',
-            'tensorflow': 'TensorFlow',
-            'pytorch': 'PyTorch',
-            'keras': 'Keras',
-            'scikit-learn': 'Scikit-learn',
-            'pandas': 'Pandas',
-            'numpy': 'NumPy',
-            'opencv': 'OpenCV',
-            'nlp': 'Natural Language Processing',
-            'computer vision': 'Computer Vision',
-            'hugging face': 'Hugging Face',
-            'transformers': 'Transformers',
-            'langchain': 'LangChain',
-            'openai': 'OpenAI',
-            'spacy': 'spaCy',
-            'nltk': 'NLTK',
-            
-            # Data Science & Analytics
-            'data science': 'Data Science',
-            'data analysis': 'Data Analysis',
-            'data visualization': 'Data Visualization',
-            'tableau': 'Tableau',
-            'power bi': 'Power BI',
-            'looker': 'Looker',
-            'jupyter': 'Jupyter',
-            'anaconda': 'Anaconda',
-            'spark': 'Apache Spark',
-            'hadoop': 'Hadoop',
-            'kafka': 'Apache Kafka',
-            'airflow': 'Apache Airflow',
-            'dbt': 'dbt',
-            
-            # Game Development
-            'unity': 'Unity',
-            'unreal engine': 'Unreal Engine',
-            'godot': 'Godot',
-            'blender': 'Blender',
-            'game development': 'Game Development',
-            'gamemaker': 'GameMaker Studio',
-            
-            # Design & Creative
-            'ui/ux': 'UI/UX Design',
-            'figma': 'Figma',
-            'sketch': 'Sketch',
-            'adobe xd': 'Adobe XD',
-            'photoshop': 'Adobe Photoshop',
-            'illustrator': 'Adobe Illustrator',
-            'after effects': 'After Effects',
-            'premiere pro': 'Premiere Pro',
-            
-            # Version Control & Collaboration
-            'git': 'Git',
-            'github': 'GitHub',
-            'gitlab': 'GitLab',
-            'bitbucket': 'Bitbucket',
-            'svn': 'Subversion',
-            'mercurial': 'Mercurial',
-            
-            # Testing & Quality Assurance
-            'testing': 'Software Testing',
-            'unit testing': 'Unit Testing',
-            'integration testing': 'Integration Testing',
-            'jest': 'Jest',
-            'mocha': 'Mocha',
-            'pytest': 'Pytest',
-            'junit': 'JUnit',
-            'selenium': 'Selenium',
-            'cypress': 'Cypress',
-            'playwright': 'Playwright',
-            'postman': 'Postman',
-            
-            # API & Integration
-            'api': 'API Development',
-            'rest': 'REST APIs',
-            'restful': 'RESTful APIs',
-            'graphql': 'GraphQL',
-            'soap': 'SOAP',
-            'grpc': 'gRPC',
-            'webhook': 'Webhooks',
-            'microservices': 'Microservices',
-            'soa': 'Service-Oriented Architecture',
-            
-            # Soft Skills & Methodologies
-            'agile': 'Agile Methodology',
-            'scrum': 'Scrum',
-            'kanban': 'Kanban',
-            'lean': 'Lean Development',
-            'tdd': 'Test-Driven Development',
-            'bdd': 'Behavior-Driven Development',
-            'project management': 'Project Management',
-            'leadership': 'Leadership',
-            'communication': 'Communication Skills',
-            'problem solving': 'Problem Solving',
-            'teamwork': 'Teamwork',
-            
-            # Security & Networking
-            'cybersecurity': 'Cybersecurity',
-            'penetration testing': 'Penetration Testing',
-            'ethical hacking': 'Ethical Hacking',
-            'networking': 'Computer Networking',
-            'tcp/ip': 'TCP/IP',
-            'vpn': 'VPN',
-            'firewall': 'Firewall Management',
-            'ssl/tls': 'SSL/TLS',
-            
-            # Blockchain & Cryptocurrency
-            'blockchain': 'Blockchain Technology',
-            'ethereum': 'Ethereum',
-            'bitcoin': 'Bitcoin',
-            'smart contracts': 'Smart Contracts',
-            'defi': 'Decentralized Finance',
-            'nft': 'NFT Development',
-            'web3': 'Web3 Development',
-            
-            # Emerging Technologies
-            'iot': 'Internet of Things',
-            'ar': 'Augmented Reality',
-            'vr': 'Virtual Reality',
-            'mixed reality': 'Mixed Reality',
-            'edge computing': 'Edge Computing',
-            'quantum computing': 'Quantum Computing',
-            '5g': '5G Technology',
-            
-            # Business & Domain Skills
-            'business analysis': 'Business Analysis',
-            'product management': 'Product Management',
-            'digital marketing': 'Digital Marketing',
-            'seo': 'Search Engine Optimization',
-            'content marketing': 'Content Marketing',
-            'social media': 'Social Media Marketing',
-            'e-commerce': 'E-commerce',
-            'fintech': 'Financial Technology',
-            'healthcare': 'Healthcare Technology',
-            'edtech': 'Educational Technology'
-        }
-        
-        message_lower = message.lower()
-        extracted_skills = []
-        
-        # Look for skill mentions in the message
-        for pattern, skill_name in skill_patterns.items():
-            if pattern in message_lower:
-                # Infer expertise level from context
-                expertise_level = 'beginner'  # default
-                
-                if any(word in message_lower for word in ['expert', 'mastered', 'advanced', 'proficient']):
-                    expertise_level = 'expert'
-                elif any(word in message_lower for word in ['experienced', 'worked with', 'using', 'good at']):
-                    expertise_level = 'intermediate'
-                elif any(word in message_lower for word in ['learned', 'learning', 'started', 'new to']):
-                    expertise_level = 'beginner'
-                elif any(word in message_lower for word in ['improved', 'better', 'advanced']):
-                    expertise_level = 'intermediate'
-                    
-                extracted_skills.append({
-                    'skill': skill_name,
-                    'expertise_level': expertise_level
-                })
-        
-        # Remove duplicates
-        seen = set()
-        unique_skills = []
-        for skill in extracted_skills:
-            skill_key = skill['skill'].lower()
-            if skill_key not in seen:
-                seen.add(skill_key)
-                unique_skills.append(skill)
-        
-        return {"extracted_skills": unique_skills}

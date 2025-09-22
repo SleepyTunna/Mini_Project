@@ -5,9 +5,9 @@ class Settings:
     """Application settings and configuration"""
     
     # API Configuration
-    API_TITLE: str = "MARGDARSHAK API"
+    API_TITLE: str = "Student Compass API"
     API_VERSION: str = "1.0.0"
-    API_DESCRIPTION: str = "A FastAPI backend service that uses Google's Vertex AI to analyze skills and generate career recommendations"
+    API_DESCRIPTION: str = "A FastAPI backend service that uses Google's Vertex AI to analyze skills and generate career recommendations for students"
     
     # Server Configuration
     HOST: str = "0.0.0.0"

@@ -15,12 +15,14 @@ A comprehensive AI-powered career guidance platform that helps users discover pe
 - **Dynamic Content**: All pages adapt based on user's actual skills input
 - **Real-time Suggestions**: Smart skill suggestions with fuzzy matching
 - **Multi-level Expertise**: Beginner to Expert level personalization
+- **Enhanced Medical Domains**: Comprehensive coverage of 12 medical specializations with detailed career paths
 
 ### 🎨 **User Experience**
 - **Beautiful Animations**: Subtle wavy background animations with floating elements
 - **Glass Morphism Design**: Modern UI with enhanced visual effects
 - **Responsive Design**: Works seamlessly across all devices
 - **Minimalistic Interface**: Clean, focused design for optimal user experience
+- **Friendly AI Guide**: Conversational AI that acts like a supportive mentor with encouraging language
 
 ### 📚 **Educational Resources**
 - **YouTube Integration**: Skill-based video recommendations using YouTube API
@@ -29,7 +31,7 @@ A comprehensive AI-powered career guidance platform that helps users discover pe
 - **Progress Tracking**: Monitor your learning journey
 
 ### 🔧 **Technical Features**
-- **Multi-Domain Support**: Software Development, Data Science, Game Development, Mobile, DevOps, Cybersecurity, and more
+- **Multi-Domain Support**: Software Development, Data Science, Game Development, Mobile, DevOps, Cybersecurity, and Medical Specializations
 - **Fallback Systems**: Robust error handling with static responses when AI services are unavailable
 - **Context Management**: Global state management for seamless user experience
 - **API Integration**: RESTful APIs with comprehensive error handling
@@ -50,9 +52,9 @@ MARGDARSHAN/
 ├── backend/                 # FastAPI Backend
 │   ├── routes/             # API route handlers
 │   ├── services/           # Business logic services
-│   ├── models/             # Data models and schemas
-│   ├── config/             # Configuration settings
-│   └── main.py             # Application entry point
+│   ├── models/              # Data models and schemas
+│   ├── config/              # Configuration settings
+│   └── main.py              # Application entry point
 ├── requirements.txt         # Python dependencies
 └── README.md               # This file
 ```
@@ -157,6 +159,13 @@ Resources: React tutorials, JavaScript courses, full-stack project videos
 Skills: Python, Machine Learning, TensorFlow, Data Analysis
 Result: Data Scientist, ML Engineer, Data Analyst career paths
 Resources: Python for data science, ML tutorials, statistics courses
+```
+
+#### Medical Specialization Path
+```
+Skills: Pediatrics, Child Development, Family Communication
+Result: Pediatrician, Pediatric Specialist, Neonatologist career paths
+Resources: Pediatrics courses, child psychology videos, medical training resources
 ```
 
 ## 🔧 Configuration
@@ -338,4 +347,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Built with ❤️ for career growth and learning**
 
-*MARGDARSHAN - Your guide to a successful career in technology*
+*MARGDARSHAN - Your guide to a successful career in technology and medicine*

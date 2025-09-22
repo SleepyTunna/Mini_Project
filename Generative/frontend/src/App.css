@@ -9,25 +9,25 @@
   }
   
   body {
-    @apply bg-gray-50 dark:bg-gray-900 transition-colors duration-200;
+    @apply bg-gray-50 transition-colors duration-200;
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-primary-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-700 focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-800 transition-all duration-200;
+    @apply bg-primary-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-primary-700 focus:ring-4 focus:ring-primary-200 transition-all duration-200;
   }
   
   .btn-secondary {
-    @apply bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 border border-primary-600 dark:border-primary-400 px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 dark:hover:bg-gray-700 focus:ring-4 focus:ring-primary-200 dark:focus:ring-primary-800 transition-all duration-200;
+    @apply bg-white text-primary-600 border border-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 focus:ring-4 focus:ring-primary-200 transition-all duration-200;
   }
   
   .card {
-    @apply bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl dark:shadow-gray-900/20 transition-shadow duration-200;
+    @apply bg-white rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-200;
   }
   
   .input-field {
-    @apply w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors;
+    @apply w-full px-4 py-3 border border-gray-300 bg-white text-gray-900 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors;
   }
 }
 
@@ -169,15 +169,15 @@
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-gray-100 dark:bg-gray-800;
+  @apply bg-gray-100;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+  @apply bg-gray-300 rounded-full;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-gray-400 dark:bg-gray-500;
+  @apply bg-gray-400;
 }
 
 /* ChatBot specific styles */
@@ -200,6 +200,7 @@
   right: 2rem;
   z-index: 1000;
   animation: chatWindowSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 
@@ -249,16 +250,8 @@
   border-radius: 9999px;
 }
 
-.dark .scrollbar-thumb-gray-300::-webkit-scrollbar-thumb {
-  background-color: #4b5563;
-}
-
 .scrollbar-track-gray-100::-webkit-scrollbar-track {
   background-color: #f3f4f6;
-}
-
-.dark .scrollbar-track-gray-100::-webkit-scrollbar-track {
-  background-color: #1f2937;
 }
 
 .scrollbar-thin::-webkit-scrollbar {
@@ -343,7 +336,7 @@
 
 /* Focus styles */
 .focus-ring {
-  @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800;
+  @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
 }
 
 /* Responsive text */
