@@ -5,7 +5,8 @@ from dependencies import get_current_user
 from typing import Optional
 
 router = APIRouter(tags=["analyze"])
-ai_service = AIService()
+# Move AIService initialization inside the function to ensure proper environment loading
+# ai_service = AIService()  # This line will be removed
 
 @router.post("/analyze", response_model=AnalyzeResponse)
 async def analyze_career_paths(
@@ -16,6 +17,9 @@ async def analyze_career_paths(
     Analyze skills and expertise to generate career paths, roadmap, and courses.
     Can be used with or without authentication.
     """
+    # Initialize AIService inside the function to ensure environment variables are loaded
+    ai_service = AIService()
+    
     try:
         # Use skills and expertise from request or user profile
         skills = request.skills or (current_user.skills if current_user else "")

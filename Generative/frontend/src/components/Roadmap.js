@@ -6,10 +6,11 @@ import { careerAPI } from '../services/api';
 const Roadmap = () => {
   const [showYouTubeVideos, setShowYouTubeVideos] = useState(false);
   const [youtubeVideos, setYoutubeVideos] = useState([]);
+  const [showBooks, setShowBooks] = useState(false);
+  const [books, setBooks] = useState([]);
   const [loadingVideos, setLoadingVideos] = useState(false);
+  const [loadingBooks, setLoadingBooks] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState('programming');
-  const [careerPaths, setCareerPaths] = useState([]);
-  const [selectedPath, setSelectedPath] = useState(null);
   const [roadmap, setRoadmap] = useState([]);
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -146,6 +147,200 @@ const Roadmap = () => {
     return demoData[category] || demoData.programming;
   };
 
+  // Function to search books using Google Books API
+  const searchBooks = async (category = 'programming', userSkills = '') => {
+    setLoadingBooks(true);
+    setSelectedCategory(category);
+    
+    // Create search term based on user's actual skills or category
+    let searchTerm;
+    if (userSkills && userSkills.trim()) {
+      // Use user's actual skills for more relevant results
+      searchTerm = userSkills.split(',').slice(0, 3).join(' ').trim();
+    } else if (analysisResult && analysisResult.skills) {
+      // Use skills from analysis result if available
+      searchTerm = analysisResult.skills.split(',').slice(0, 3).join(' ').trim();
+    } else {
+      // Fallback to category-based search
+      searchTerm = searchCategories[category] || searchCategories.programming;
+    }
+    
+    console.log('Searching Books for:', searchTerm);
+    
+    try {
+      // Use the Google Books API
+      const GOOGLE_BOOKS_API_KEY = process.env.REACT_APP_GOOGLE_BOOKS_API_KEY || 'AIzaSyAytoNZiRTkprioNLhFVd9sUmAkn-RVyMg';
+      const response = await fetch(
+        `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(searchTerm + ' course')}&maxResults=9&key=${GOOGLE_BOOKS_API_KEY}`
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data && data.items && data.items.length > 0) {
+          // Process Google Books API response
+          const processedBooks = data.items
+            .filter(book => book.volumeInfo.title && book.volumeInfo.title.length > 5) // Filter out short titles
+            .map(book => ({
+              title: book.volumeInfo.title,
+              authors: book.volumeInfo.authors ? book.volumeInfo.authors.join(', ') : 'Unknown Author',
+              description: book.volumeInfo.description ? book.volumeInfo.description.substring(0, 200) + '...' : 'No description available',
+              thumbnail: book.volumeInfo.imageLinks ? book.volumeInfo.imageLinks.thumbnail : 'https://via.placeholder.com/128x192?text=No+Cover',
+              url: book.volumeInfo.infoLink || '#',
+              publishedDate: book.volumeInfo.publishedDate || 'Unknown Date',
+              pageCount: book.volumeInfo.pageCount || 'Unknown'
+            }))
+            .slice(0, 9); // Get up to 9 books
+          
+          console.log('Found books:', processedBooks.length);
+          setBooks(processedBooks);
+          setShowBooks(true);
+          setShowYouTubeVideos(false); // Hide videos when showing books
+          return;
+        }
+      }
+      
+      // Enhanced fallback to category-specific demo data
+      console.log(`Books API unavailable for ${category}, using demo data`);
+      setBooks(getDemoBooks(category));
+      setShowBooks(true);
+      setShowYouTubeVideos(false); // Hide videos when showing books
+      
+    } catch (error) {
+      console.error('Error fetching books:', error);
+      // Show category-specific demo books on error
+      setBooks(getDemoBooks(category));
+      setShowBooks(true);
+      setShowYouTubeVideos(false); // Hide videos when showing books
+    } finally {
+      setLoadingBooks(false);
+    }
+  };
+
+  // Enhanced demo data for books
+  const getDemoBooks = (category) => {
+    const demoData = {
+      programming: [
+        {
+          title: "Clean Code: A Handbook of Agile Software Craftsmanship",
+          authors: "Robert C. Martin",
+          description: "Even bad code can function. But if code isn’t clean, it can bring a development organization to its knees.",
+          thumbnail: "https://via.placeholder.com/128x192/4F46E5/FFFFFF?text=Clean+Code",
+          url: "https://books.google.com",
+          publishedDate: "2008",
+          pageCount: "464"
+        },
+        {
+          title: "You Don't Know JS",
+          authors: "Kyle Simpson",
+          description: "This is a series of books diving deep into the core mechanisms of the JavaScript language.",
+          thumbnail: "https://via.placeholder.com/128x192/4F46E5/FFFFFF?text=You+Dont+Know+JS",
+          url: "https://books.google.com",
+          publishedDate: "2019",
+          pageCount: "278"
+        },
+        {
+          title: "Design Patterns: Elements of Reusable Object-Oriented Software",
+          authors: "Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides",
+          description: "Capturing a wealth of experience about the design of object-oriented software.",
+          thumbnail: "https://via.placeholder.com/128x192/4F46E5/FFFFFF?text=Design+Patterns",
+          url: "https://books.google.com",
+          publishedDate: "1994",
+          pageCount: "416"
+        }
+      ],
+      frontend: [
+        {
+          title: "Learning React: A Hands-On Guide to Building Web Applications",
+          authors: "Kirupa Chinnathambi",
+          description: "Learn React with this hands-on guide that teaches you how to build React applications.",
+          thumbnail: "https://via.placeholder.com/128x192/4F46E5/FFFFFF?text=Learning+React",
+          url: "https://books.google.com",
+          publishedDate: "2019",
+          pageCount: "400"
+        },
+        {
+          title: "CSS Secrets: Better Solutions to Everyday Web Design Problems",
+          authors: "Lea Verou",
+          description: "In this practical guide, CSS expert Lea Verou provides 47 undocumented techniques.",
+          thumbnail: "https://via.placeholder.com/128x192/4F46E5/FFFFFF?text=CSS+Secrets",
+          url: "https://books.google.com",
+          publishedDate: "2014",
+          pageCount: "352"
+        },
+        {
+          title: "JavaScript: The Definitive Guide",
+          authors: "David Flanagan",
+          description: "This is a book about JavaScript, the programming language of the Web.",
+          thumbnail: "https://via.placeholder.com/128x192/4F46E5/FFFFFF?text=JavaScript+Guide",
+          url: "https://books.google.com",
+          publishedDate: "2020",
+          pageCount: "700"
+        }
+      ],
+      backend: [
+        {
+          title: "Node.js Design Patterns",
+          authors: "Mario Casciaro, Luciano Mammino",
+          description: "Learn how to build scalable and maintainable Node.js applications.",
+          thumbnail: "https://via.placeholder.com/128x192/4F46E5/FFFFFF?text=Node.js+Patterns",
+          url: "https://books.google.com",
+          publishedDate: "2020",
+          pageCount: "700"
+        },
+        {
+          title: "Building Microservices",
+          authors: "Sam Newman",
+          description: "Learn how to build and evolve microservices effectively.",
+          thumbnail: "https://via.placeholder.com/128x192/4F46E5/FFFFFF?text=Microservices",
+          url: "https://books.google.com",
+          publishedDate: "2021",
+          pageCount: "320"
+        },
+        {
+          title: "Database Design for Mere Mortals",
+          authors: "Michael J. Hernandez",
+          description: "A straightforward, platform-independent tutorial on the basic principles.",
+          thumbnail: "https://via.placeholder.com/128x192/4F46E5/FFFFFF?text=Database+Design",
+          url: "https://books.google.com",
+          publishedDate: "2019",
+          pageCount: "650"
+        }
+      ],
+      datascience: [
+        {
+          title: "Python for Data Analysis",
+          authors: "Wes McKinney",
+          description: "Learn how to manipulate, process, clean, and crunch datasets in Python.",
+          thumbnail: "https://via.placeholder.com/128x192/4F46E5/FFFFFF?text=Python+Data",
+          url: "https://books.google.com",
+          publishedDate: "2022",
+          pageCount: "500"
+        },
+        {
+          title: "Hands-On Machine Learning",
+          authors: "Aurélien Géron",
+          description: "Concepts, tools, and techniques to build intelligent systems.",
+          thumbnail: "https://via.placeholder.com/128x192/4F46E5/FFFFFF?text=ML+Book",
+          url: "https://books.google.com",
+          publishedDate: "2019",
+          pageCount: "850"
+        },
+        {
+          title: "The Elements of Statistical Learning",
+          authors: "Trevor Hastie, Robert Tibshirani, Jerome Friedman",
+          description: "A valuable resource for statisticians and anyone working in data mining.",
+          thumbnail: "https://via.placeholder.com/128x192/4F46E5/FFFFFF?text=Statistical+Learning",
+          url: "https://books.google.com",
+          publishedDate: "2017",
+          pageCount: "768"
+        }
+      ]
+    };
+    
+    return demoData[category] || demoData.programming;
+  };
+
   // Enhanced function to search YouTube videos based on user's actual skills
   const searchYouTubeVideos = async (category = 'programming', userSkills = '') => {
     setLoadingVideos(true);
@@ -232,14 +427,6 @@ const Roadmap = () => {
         const result = await careerAPI.analyzeCareer(skills, expertise);
         
         // Update state with the results
-        if (result.career_paths) {
-          setCareerPaths(result.career_paths);
-        }
-        
-        if (result.selected_path) {
-          setSelectedPath(result.selected_path);
-        }
-        
         if (result.roadmap) {
           setRoadmap(result.roadmap);
         }
@@ -250,39 +437,6 @@ const Roadmap = () => {
       } catch (err) {
         console.error('Error fetching career analysis:', err);
         setError('Failed to load career analysis. Using demo data.');
-        
-        // Set demo data on error
-        setCareerPaths([
-          {
-            title: "Software Developer",
-            description: "Build applications and systems using programming languages",
-            required_skills: ["JavaScript", "Python", "React", "Node.js"],
-            salary_range: "₹49.80 lakhs - ₹99.60 lakhs",
-            growth_prospect: "High - Technology sector continues to grow rapidly"
-          },
-          {
-            title: "Data Scientist",
-            description: "Analyze complex data to help organizations make informed decisions",
-            required_skills: ["Python", "R", "SQL", "Machine Learning"],
-            salary_range: "₹60.50 lakhs - ₹120.40 lakhs",
-            growth_prospect: "Very High - Data-driven decision making is crucial"
-          },
-          {
-            title: "DevOps Engineer",
-            description: "Bridge development and operations to improve deployment processes",
-            required_skills: ["Docker", "Kubernetes", "CI/CD", "Cloud Platforms"],
-            salary_range: "₹55.30 lakhs - ₹110.20 lakhs",
-            growth_prospect: "Very High - Critical for modern software delivery"
-          }
-        ]);
-        
-        setSelectedPath({
-          title: "Software Developer",
-          description: "Build applications and systems using programming languages",
-          required_skills: ["JavaScript", "Python", "React", "Node.js"],
-          salary_range: "₹49.80 lakhs - ₹99.60 lakhs",
-          growth_prospect: "High - Technology sector continues to grow rapidly"
-        });
         
         setRoadmap([
           {
@@ -370,17 +524,17 @@ const Roadmap = () => {
     },
     {
       id: 3,
-      title: "YouTube Studies",
-      description: "Discover curated YouTube videos and tutorials for your learning path.",
-      icon: "📺",
+      title: "Learning Resources",
+      description: "Discover curated YouTube videos and books for your learning path.",
+      icon: "📚",
       status: "upcoming",
-      isYouTube: true
+      isResource: true
     },
     {
       id: 4,
       title: "Learning Plan",
       description: "Get a personalized learning roadmap with courses and resources.",
-      icon: "📚",
+      icon: "📖",
       status: "upcoming"
     },
     {
@@ -430,7 +584,7 @@ const Roadmap = () => {
         {loading && (
           <div className="text-center py-8">
             <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-600"></div>
-            <p className="mt-4 text-gray-600">Analyzing your career path...</p>
+            <p className="mt-4 text-gray-600">Analyzing your career path with AI...</p>
           </div>
         )}
         
@@ -442,84 +596,7 @@ const Roadmap = () => {
               </div>
               <div className="ml-3">
                 <p className="text-sm text-yellow-700">{error}</p>
-              </div>
-            </div>
-          </div>
-        )}
-        
-        {/* Career Paths Section */}
-        {!loading && careerPaths.length > 0 && (
-          <div className="mb-12">
-            <h3 className="text-2xl font-bold mb-6 text-gray-800 professional-heading">Career Paths</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {careerPaths.map((path, index) => (
-                <div 
-                  key={index}
-                  className={`bg-white rounded-lg shadow-md p-6 border-l-4 ${
-                    selectedPath && selectedPath.title === path.title 
-                      ? 'border-indigo-500 ring-2 ring-indigo-200' 
-                      : 'border-gray-300'
-                  }`}
-                  onClick={() => setSelectedPath(path)}
-                >
-                  <h4 className="text-xl font-semibold mb-2 text-gray-800">{path.title}</h4>
-                  <p className="text-gray-600 mb-4">{path.description}</p>
-                  <div className="mb-4">
-                    <p className="text-sm font-medium text-gray-700 mb-1">Required Skills:</p>
-                    <div className="flex flex-wrap gap-1">
-                      {path.required_skills.slice(0, 4).map((skill, skillIndex) => (
-                        <span 
-                          key={skillIndex}
-                          className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded"
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-green-600">{path.salary_range}</span>
-                    <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded">
-                      {path.growth_prospect.split(' - ')[0]}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        {/* Selected Career Path Details */}
-        {selectedPath && (
-          <div className="mb-12 bg-white rounded-lg shadow-md p-6 border border-gray-200">
-            <h3 className="text-2xl font-bold mb-4 text-gray-800">Selected Path: {selectedPath.title}</h3>
-            <p className="text-gray-600 mb-6">{selectedPath.description}</p>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="text-lg font-semibold mb-3 text-gray-800">Required Skills</h4>
-                <div className="flex flex-wrap gap-2">
-                  {selectedPath.required_skills.map((skill, index) => (
-                    <span 
-                      key={index}
-                      className="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm"
-                    >
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-              
-              <div>
-                <h4 className="text-lg font-semibold mb-3 text-gray-800">Prospects</h4>
-                <div className="space-y-2">
-                  <p className="text-gray-600">
-                    <span className="font-medium">Salary Range:</span> {selectedPath.salary_range}
-                  </p>
-                  <p className="text-gray-600">
-                    <span className="font-medium">Growth:</span> {selectedPath.growth_prospect}
-                  </p>
-                </div>
+                <p className="text-sm text-yellow-700 mt-2">Showing static career guidance while we resolve the issue.</p>
               </div>
             </div>
           </div>
@@ -542,7 +619,7 @@ const Roadmap = () => {
                     </div>
                     
                     {/* Step content */}
-                    <div className="ml-6 flex-grow bg-white rounded-lg shadow-md p-6 border border-gray-200">
+                    <div className="ml-6 flex-grow bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow duration-300">
                       <div className="flex justify-between items-start">
                         <h4 className="text-xl font-semibold text-gray-800">{step.title}</h4>
                         <span className="text-sm bg-indigo-100 text-indigo-800 px-2 py-1 rounded">
@@ -569,39 +646,6 @@ const Roadmap = () => {
           </div>
         )}
         
-        {/* Courses Section */}
-        {!loading && courses.length > 0 && (
-          <div className="mb-12">
-            <h3 className="text-2xl font-bold mb-6 text-gray-800 professional-heading">Recommended Courses</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {courses.map((course, index) => (
-                <div key={index} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
-                  <div className="p-6">
-                    <h4 className="text-lg font-semibold mb-2 text-gray-800">{course.title}</h4>
-                    <p className="text-gray-600 mb-4">{course.provider}</p>
-                    
-                    <div className="flex justify-between items-center mb-4">
-                      <span className="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                        {course.difficulty}
-                      </span>
-                      <span className="text-sm text-gray-500">{course.duration}</span>
-                    </div>
-                    
-                    <a 
-                      href={course.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="inline-block w-full text-center bg-indigo-600 hover:bg-indigo-700 text-white py-2 px-4 rounded-lg transition-colors duration-200"
-                    >
-                      View Course
-                    </a>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {roadmapSteps.map((step, index) => (
             <div 
@@ -617,8 +661,8 @@ const Roadmap = () => {
               <h3 className="text-xl font-semibold mb-3 text-gray-800 professional-subheading">{step.title}</h3>
               <p className="text-gray-600 mb-4 professional-text">{step.description}</p>
               
-              {/* Enhanced YouTube Integration with User Skills */}
-              {step.isYouTube && (
+              {/* Enhanced Resource Integration with User Skills */}
+              {step.isResource && (
                 <div className="mb-4 space-y-3">
                   <div className="grid grid-cols-2 gap-2">
                     <button
@@ -627,15 +671,35 @@ const Roadmap = () => {
                       className="bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 text-white px-3 py-2 rounded-lg flex items-center justify-center space-x-1 transition-colors duration-200 text-sm professional-button"
                     >
                       <i className="fab fa-youtube"></i>
-                      <span>{loadingVideos ? 'Loading...' : 'Your Skills'}</span>
+                      <span>{loadingVideos ? 'Loading...' : 'Videos'}</span>
                     </button>
                     
+                    <button
+                      onClick={() => searchBooks('programming', analysisResult?.skills || user?.skills)}
+                      disabled={loadingBooks}
+                      className="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white px-3 py-2 rounded-lg flex items-center justify-center space-x-1 transition-colors duration-200 text-sm professional-button"
+                    >
+                      <i className="fas fa-book"></i>
+                      <span>{loadingBooks ? 'Loading...' : 'Books'}</span>
+                    </button>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2">
                     <button
                       onClick={() => searchYouTubeVideos('frontend', analysisResult?.skills || user?.skills)}
                       disabled={loadingVideos}
                       className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-3 py-2 rounded-lg flex items-center justify-center space-x-1 transition-colors duration-200 text-sm professional-button"
                     >
                       <i className="fab fa-youtube"></i>
+                      <span>Frontend</span>
+                    </button>
+                    
+                    <button
+                      onClick={() => searchBooks('frontend', analysisResult?.skills || user?.skills)}
+                      disabled={loadingBooks}
+                      className="bg-green-600 hover:bg-green-700 disabled:bg-green-400 text-white px-3 py-2 rounded-lg flex items-center justify-center space-x-1 transition-colors duration-200 text-sm professional-button"
+                    >
+                      <i className="fas fa-book"></i>
                       <span>Frontend</span>
                     </button>
                   </div>
@@ -651,32 +715,12 @@ const Roadmap = () => {
                     </button>
                     
                     <button
-                      onClick={() => searchYouTubeVideos('game', analysisResult?.skills || user?.skills)}
-                      disabled={loadingVideos}
+                      onClick={() => searchBooks('backend', analysisResult?.skills || user?.skills)}
+                      disabled={loadingBooks}
                       className="bg-purple-600 hover:bg-purple-700 disabled:bg-purple-400 text-white px-3 py-2 rounded-lg flex items-center justify-center space-x-1 transition-colors duration-200 text-sm professional-button"
                     >
-                      <i className="fab fa-youtube"></i>
-                      <span>Game Dev</span>
-                    </button>
-                  </div>
-                  
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      onClick={() => searchYouTubeVideos('datascience', analysisResult?.skills || user?.skills)}
-                      disabled={loadingVideos}
-                      className="bg-yellow-600 hover:bg-yellow-700 disabled:bg-yellow-400 text-white px-3 py-2 rounded-lg flex items-center justify-center space-x-1 transition-colors duration-200 text-sm professional-button"
-                    >
-                      <i className="fab fa-youtube"></i>
-                      <span>Data Science</span>
-                    </button>
-                    
-                    <button
-                      onClick={() => searchYouTubeVideos('design', analysisResult?.skills || user?.skills)}
-                      disabled={loadingVideos}
-                      className="bg-pink-600 hover:bg-pink-700 disabled:bg-pink-400 text-white px-3 py-2 rounded-lg flex items-center justify-center space-x-1 transition-colors duration-200 text-sm professional-button"
-                    >
-                      <i className="fab fa-youtube"></i>
-                      <span>Design</span>
+                      <i className="fas fa-book"></i>
+                      <span>Backend</span>
                     </button>
                   </div>
                   
@@ -755,6 +799,68 @@ const Roadmap = () => {
                 className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-lg transition-colors duration-200 professional-button"
               >
                 Hide Videos
+              </button>
+            </div>
+          </div>
+        )}
+        
+        {/* Books Section */}
+        {showBooks && (
+          <div className="mt-12">
+            <div className="text-center mb-8">
+              // Updated text colors for light mode
+              <h3 className="text-3xl font-bold mb-4 text-gray-800 professional-heading">📚 Recommended Books - {selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1)}</h3>
+              <p className="text-lg text-gray-600 professional-text">Curated book recommendations to deepen your knowledge</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {books.map((book, index) => (
+                // Updated card styling for light mode
+                <div key={index} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 professional-card border border-gray-200">
+                  <div className="relative">
+                    <img 
+                      src={book.thumbnail || 'https://via.placeholder.com/128x192?text=Book'} 
+                      alt={book.title}
+                      className="w-full h-48 object-contain p-4"
+                    />
+                    <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity duration-300">
+                      <a 
+                        href={book.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg flex items-center space-x-2 transition-colors duration-200 professional-button"
+                      >
+                        <i className="fas fa-book-open"></i>
+                        <span>View Book</span>
+                      </a>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    // Updated text colors for light mode
+                    <h4 className="text-lg font-semibold mb-2 text-gray-800 professional-subheading line-clamp-2">
+                      {book.title || 'Book Title'}
+                    </h4>
+                    <p className="text-sm text-gray-600 mb-2 professional-text">
+                      {book.authors || 'Unknown Author'}
+                    </p>
+                    <p className="text-xs text-gray-500 mb-2 line-clamp-3">
+                      {book.description || 'No description available'}
+                    </p>
+                    <div className="flex justify-between items-center text-xs text-gray-500">
+                      <span>{book.publishedDate || 'Unknown Date'}</span>
+                      <span>{book.pageCount || 'Unknown'} pages</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div className="text-center mt-8">
+              <button
+                onClick={() => setShowBooks(false)}
+                className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-6 py-2 rounded-lg transition-colors duration-200 professional-button"
+              >
+                Hide Books
               </button>
             </div>
           </div>

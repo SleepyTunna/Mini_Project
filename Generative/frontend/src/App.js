@@ -5,6 +5,7 @@ import Landing from "./pages/Landing";
 import CareerPath from "./pages/CareerPath";
 import Roadmap from "./pages/Roadmap";
 import Flowchart from "./pages/Flowchart";
+import BookTest from "./pages/BookTest";
 import AIChatBot from "./components/AIChatBot";
 import { AppProvider } from "./context/AppContext";
 
@@ -18,6 +19,7 @@ function AppContent() {
         <Route path="/career-path" element={<CareerPath />} />
         <Route path="/roadmap" element={<Roadmap />} />
         <Route path="/flowchart" element={<Flowchart />} />
+        <Route path="/book-test" element={<BookTest />} />
       </Routes>
       <AIChatBot />
     </div>

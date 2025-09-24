@@ -93,5 +93,6 @@ bcrypt==4.1.2
 
 # YouTube API Integration
 # Using custom endpoint: https://abhi-api.vercel.app/api/search/yts
-# YouTube API Integration
-# Using custom endpoint: https://abhi-api.vercel.app/api/search/yts
+
+# Google Books API Integration
+# Using official Google Books API: https://www.googleapis.com/books/v1/volumes# Using official Google Books API: https://www.googleapis.com/books/v1/volumes

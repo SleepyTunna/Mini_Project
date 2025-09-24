@@ -10,7 +10,8 @@ const Navbar = () => {
     { path: '/', label: 'Home', icon: 'fa-home' },
     { path: '/career-path', label: 'Career Paths', icon: 'fa-road' },
     { path: '/roadmap', label: 'Roadmap', icon: 'fa-map' },
-    { path: '/flowchart', label: 'Flowchart', icon: 'fa-project-diagram' }
+    { path: '/flowchart', label: 'Flowchart', icon: 'fa-project-diagram' },
+    { path: '/book-test', label: 'Books', icon: 'fa-book' }
   ];
 
   return (

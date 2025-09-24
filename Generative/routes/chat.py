@@ -7,7 +7,9 @@ from typing import Optional
 import json
 
 router = APIRouter(prefix="/chat", tags=["chat"])
-ai_service = AIService()
+
+# Move AIService initialization inside the function to ensure proper environment loading
+# ai_service = AIService()  # This line will be removed
 
 @router.post("/", response_model=ChatResponse)
 async def chat_with_career_assistant(
@@ -18,6 +20,9 @@ async def chat_with_career_assistant(
     Interactive career guidance chat powered by Gemini AI.
     Provides personalized roadmap guidance based on user's current skills and goals.
     """
+    # Initialize AIService inside the function to ensure environment variables are loaded
+    ai_service = AIService()
+    
     try:
         # Get user context
         user_skills = current_user.skills if current_user else ""

@@ -174,7 +174,8 @@ class AIService:
         try:
             # Try both the SDK and direct REST API approach
             api_key = os.getenv('GOOGLE_GENAI_API_KEY', '')
-            if not api_key or api_key == 'your-google-genai-api-key':
+            if not api_key or api_key == 'your_google_gemini_api_key_here':
+                print("⚠️  Google Generative AI API key not found or not configured in .env file")
                 return False
             
             # Set up for direct REST API calls
@@ -416,6 +417,7 @@ class AIService:
         # If all AI services fail, return empty string (caller handles fallback)
         print("⚠️ All AI services failed, using static fallback")
         return ""
+    
     def generate_personalized_roadmap(self, user_skills: str, career_goal: str, experience_level: str) -> str:
         """
         Generate a personalized career roadmap using Gemini AI
@@ -516,6 +518,7 @@ Hey there, future rockstar! 👋 I'm so excited to help guide you on your journe
 
 Remember, every expert was once a beginner. You've got this, and I'm cheering you on every step of the way! 🌈✨
         """
+    
     def generate_career_analysis(self, skills: str, expertise: str) -> Dict[str, Any]:
         """Generate career analysis using available AI services with fallbacks"""
         
@@ -642,7 +645,6 @@ Remember, every expert was once a beginner. You've got this, and I'm cheering yo
                 json_str = json_str[:last_brace + 1]
             
             # Fix common issues
-            # Replace single quotes with double quotes for string values
             import re
             
             # Fix trailing commas
@@ -1304,7 +1306,7 @@ Remember, every expert was once a beginner. You've got this, and I'm cheering yo
                     {
                         'title': 'Pediatrician',
                         'description': 'Provide medical care specifically for infants, children, and adolescents',
-                        'required_skills': ['Child Development', 'Pediatric Diagnostics', 'Family Communication', 'Preventive Care'],
+                        'required_skills': ['Child Development', 'Pediatric Diagnostics', 'Treatment Planning', 'Family Communication'],
                         'salary_range': convert_usd_to_inr('$180,000 - $300,000'),
                         'growth_prospect': 'High - Growing focus on child health'
                     },
@@ -1777,11 +1779,11 @@ Remember, every expert was once a beginner. You've got this, and I'm cheering yo
         Generate a 5-question mock test for a user with skills {skills} and expertise {expertise}{topic_text}.
         Include questions and answers in JSON format:
         [
-          {{"question": "...", "answer": "..."}},
-          {{"question": "...", "answer": "..."}},
-          {{"question": "...", "answer": "..."}},
-          {{"question": "...", "answer": "..."}},
-          {{"question": "...", "answer": "..."}}
+          {{"question": "...", "answer": "..."}}`,
+          {{"question": "...", "answer": "..."}}`,
+          {{"question": "...", "answer": "..."}}`,
+          {{"question": "...", "answer": "..."}}`,
+          {{"question": "...", "answer": "..."}}`
         ]
         
         Make the questions challenging but appropriate for the specified skill level.
@@ -1856,4 +1858,130 @@ Remember, every expert was once a beginner. You've got this, and I'm cheering yo
         return {
             "questions": questions,
             "generated_at": datetime.now().isoformat()
+        }
+
+    def extract_skills_from_message(self, message: str, current_skills: str = "") -> Dict[str, Any]:
+        """
+        Extract skills from a chat message and update the user's skill list.
+        
+        Args:
+            message: The chat message to analyze
+            current_skills: The user's current skills list
+            
+        Returns:
+            Dict containing extracted skills and updated skills list
+        """
+        # Keywords that indicate skill mentions
+        skill_indicators = [
+            'learned', 'learning', 'studying', 'know', 'experience', 
+            'worked with', 'using', 'familiar with', 'proficient in',
+            'skilled in', 'expert in', 'mastered', 'practiced'
+        ]
+        
+        # Check if the message contains skill indicators
+        if not any(indicator in message.lower() for indicator in skill_indicators):
+            return {
+                "extracted_skills": [],
+                "updated_skills": current_skills
+            }
+        
+        # Use AI to extract skills if available
+        prompt = f"""
+        Extract specific technical skills from this message: "{message}"
+        
+        Current skills: {current_skills or "None"}
+        
+        Please provide a JSON response with this structure:
+        {{
+            "extracted_skills": [
+                {{
+                    "skill": "skill name",
+                    "expertise_level": "Beginner/Intermediate/Advanced"
+                }}
+            ]
+        }}
+        
+        Only include skills that are explicitly mentioned or strongly implied.
+        For expertise level, use:
+        - Beginner: Basic knowledge or just started learning
+        - Intermediate: Some practical experience
+        - Advanced: Strong proficiency or professional experience
+        """
+        
+        # Try to extract skills using AI
+        ai_response = self._generate_with_fallback_ai(prompt)
+        if ai_response:
+            try:
+                # Try to extract JSON from AI response
+                start_idx = ai_response.find('{')
+                end_idx = ai_response.rfind('}') + 1
+                
+                if start_idx != -1 and end_idx != -1:
+                    json_str = ai_response[start_idx:end_idx]
+                    result = json.loads(json_str)
+                    
+                    if "extracted_skills" in result:
+                        # Update skills list
+                        current_skills_list = [s.strip() for s in current_skills.split(',')] if current_skills else []
+                        new_skills = [skill["skill"] for skill in result["extracted_skills"]]
+                        
+                        # Add new skills to current skills, avoiding duplicates
+                        for skill in new_skills:
+                            if skill not in current_skills_list:
+                                current_skills_list.append(skill)
+                        
+                        updated_skills = ', '.join(current_skills_list) if current_skills_list else ""
+                        
+                        return {
+                            "extracted_skills": result["extracted_skills"],
+                            "updated_skills": updated_skills
+                        }
+            except Exception as e:
+                print(f"Error parsing skill extraction response: {e}")
+        
+        # Fallback: Simple keyword-based extraction
+        # This is a simplified approach - a more sophisticated NLP approach would be better
+        common_skills = [
+            'Python', 'JavaScript', 'Java', 'C++', 'C#', 'Ruby', 'Go', 'Rust', 'Swift', 'Kotlin',
+            'React', 'Vue', 'Angular', 'Node.js', 'Django', 'Flask', 'Spring', 'Express',
+            'SQL', 'MongoDB', 'PostgreSQL', 'MySQL', 'Redis',
+            'Docker', 'Kubernetes', 'AWS', 'Azure', 'GCP', 'Terraform',
+            'Git', 'Jenkins', 'CI/CD', 'Agile', 'Scrum',
+            'TensorFlow', 'PyTorch', 'Pandas', 'NumPy', 'Scikit-learn',
+            'Figma', 'Photoshop', 'Illustrator', 'Sketch',
+            'SEO', 'SEM', 'Google Analytics', 'Social Media Marketing'
+        ]
+        
+        extracted_skills = []
+        message_lower = message.lower()
+        
+        for skill in common_skills:
+            if skill.lower() in message_lower:
+                # Determine expertise level based on context
+                if any(word in message_lower for word in ['expert', 'proficient', 'professional', 'years']):
+                    level = 'Advanced'
+                elif any(word in message_lower for word in ['intermediate', 'comfortable', 'working']):
+                    level = 'Intermediate'
+                else:
+                    level = 'Beginner'
+                
+                extracted_skills.append({
+                    "skill": skill,
+                    "expertise_level": level
+                })
+        
+        # Update skills list
+        current_skills_list = [s.strip() for s in current_skills.split(',')] if current_skills else []
+        new_skills = [skill["skill"] for skill in extracted_skills]
+        
+        # Add new skills to current skills, avoiding duplicates
+        for skill in new_skills:
+            if skill not in current_skills_list:
+                current_skills_list.append(skill)
+        
+        updated_skills = ', '.join(current_skills_list) if current_skills_list else ""
+        
+        return {
+            "extracted_skills": extracted_skills,
+            "updated_skills": updated_skills
         }

@@ -5,7 +5,8 @@ from typing import List, Dict, Any
 import re
 
 router = APIRouter(tags=["ai-search"])
-ai_service = AIService()
+# Move AIService initialization inside the function to ensure proper environment loading
+# ai_service = AIService()  # This line will be removed
 
 class SkillSuggestionRequest(BaseModel):
     query: str
@@ -151,6 +152,9 @@ async def enhance_analysis_with_ai(request: EnhancedAnalysisRequest):
     Enhanced career analysis using AI for more intelligent recommendations
     """
     try:
+        # Initialize AIService inside the function to ensure environment variables are loaded
+        ai_service = AIService()
+        
         # Use the existing AI service with enhanced prompting
         enhanced_prompt = f"""
         Analyze the following skills and expertise for career guidance:

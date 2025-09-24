@@ -19,6 +19,7 @@ A comprehensive career guidance platform that uses **Google Gemini AI** to provi
 - **Mock Tests**: Personalized quizzes based on your expertise level
 - **Industry-Specific Guidance**: Tailored advice for different tech and medical domains
 - **Enhanced Medical Domains**: Comprehensive coverage of 12 medical specializations with detailed career paths
+- **Educational Resources**: YouTube videos and Google Books recommendations
 
 ### 🛠️ **Technology Stack**
 - **Backend**: FastAPI (Python 3.13)
@@ -33,6 +34,7 @@ A comprehensive career guidance platform that uses **Google Gemini AI** to provi
 - Python 3.13+
 - Node.js 16+
 - Google Gemini API Key
+- Google Books API Key (optional but recommended)
 
 ### 1. Clone the Repository
 ```bash
@@ -58,8 +60,9 @@ source ../.venv/bin/activate
 pip install -r requirements.txt
 
 # Set up environment variables
-# Create .env file and add your Google Gemini API key:
+# Create .env file and add your API keys:
 echo "GOOGLE_GENAI_API_KEY=your_gemini_api_key_here" > .env
+echo "REACT_APP_GOOGLE_BOOKS_API_KEY=your_google_books_api_key_here" >> .env
 
 # Run the backend server
 python main.py
@@ -94,7 +97,7 @@ What's my learning roadmap?"
 - Month 1: Python fundamentals & statistics
 - Month 2: Data manipulation with Pandas
 - Month 3: Machine learning basics
-- Specific resources and timeline
+- Specific resources, videos, and books
 
 ### Medical Specialization Query
 ```
@@ -106,13 +109,14 @@ What's my learning roadmap?"
 - Medical school preparation
 - Residency and specialization paths
 - Licensing and certification information
+- Recommended textbooks and resources
 
 ### Skill Building Query
 ```
 "I know Python basics. What should I learn next for web development?"
 ```
 
-**AI Response**: Tailored guidance based on current skill level with specific next steps and project recommendations.
+**AI Response**: Tailored guidance based on current skill level with specific next steps, project recommendations, video tutorials, and book suggestions.
 
 ## 🔧 API Endpoints
 
@@ -139,11 +143,13 @@ The platform uses **Google Gemini AI** to provide:
 
 ### AI Configuration
 ```python
-# Environment variable required
+# Environment variables required
 GOOGLE_GENAI_API_KEY=your_gemini_api_key
+REACT_APP_GOOGLE_BOOKS_API_KEY=your_google_books_api_key
 
 # The system automatically:
 # - Initializes Gemini AI with your API key
+# - Integrates Google Books API for educational content
 # - Provides intelligent fallbacks if AI is unavailable
 # - Maintains conversation context
 ```
@@ -195,9 +201,48 @@ GOOGLE_GENAI_API_KEY=your_gemini_api_key
 
 ### 🎯 **Personalized Learning Paths**
 - Custom roadmaps based on experience level
-- Specific resource recommendations
+- Specific resource recommendations (videos and books)
 - Timeline-based milestones
 - Progress tracking capabilities
+
+### 📚 **Educational Resources**
+- YouTube video recommendations based on your skills
+- Google Books recommendations for deeper learning
+- Curated courses and tutorials
+- Interactive flowcharts for visual learning
+
+## 🔄 **Beginner's Guide to Using the Platform**
+
+### Step 1: Getting Started
+1. Open the application in your browser (http://localhost:3000)
+2. You'll see a friendly welcome screen with options to select your career category
+
+### Step 2: Choose Your Path
+1. Select between **Engineering** or **Medical** fields
+2. Choose your specific field (e.g., Software Engineering, Pediatrics)
+3. Pick a specialization (e.g., Web Development, Child Psychology)
+
+### Step 3: Explore Your Roadmap
+1. After selecting your path, you'll see a personalized learning roadmap
+2. Each step includes:
+   - Clear learning objectives
+   - Estimated time to complete
+   - Recommended resources (videos and books)
+
+### Step 4: Access Learning Resources
+1. Click "Find Videos" to get YouTube recommendations
+2. Click "Find Books" to get book recommendations
+3. All resources are tailored to your selected skills
+
+### Step 5: Chat with Your AI Mentor
+1. Use the chat icon in the bottom right to talk to your AI mentor
+2. Ask questions about your career path, learning resources, or next steps
+3. Get personalized advice and encouragement
+
+### Step 6: Visualize Your Progress
+1. Visit the Flowchart page to see a visual representation of your learning path
+2. Track your progress through each step
+3. Adjust your path as needed based on your interests
 
 ## 🔒 Security Features
 
@@ -221,6 +266,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 🙏 Acknowledgments
 
 - **Google Gemini AI** for powerful AI capabilities
+- **Google Books API** for educational content
 - **FastAPI** for the excellent Python web framework
 - **React** for the responsive frontend framework
 - **Tailwind CSS** for beautiful, utility-first styling

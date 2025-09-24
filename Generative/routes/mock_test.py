@@ -6,7 +6,8 @@ from dependencies import get_current_user
 from typing import Optional
 
 router = APIRouter(prefix="/mock-test", tags=["mock-test"])
-ai_service = AIService()
+# Move AIService initialization inside the function to ensure proper environment loading
+# ai_service = AIService()  # This line will be removed
 security = HTTPBearer()
 
 @router.post("", response_model=MockTestResponse)
@@ -18,6 +19,9 @@ async def generate_mock_test(
     Generate a mock test based on skills and expertise using Vertex AI
     and save it to Firestore. Requires authentication.
     """
+    # Initialize AIService inside the function to ensure environment variables are loaded
+    ai_service = AIService()
+    
     try:
         # Use skills and expertise from request or user profile
         skills = request.skills or (current_user.skills if current_user else "")
@@ -33,8 +37,8 @@ async def generate_mock_test(
         test_data = ai_service.generate_mock_test(
             skills=skills,
             expertise=expertise,
-            topic=request.topic,
-            user_id=current_user.id if current_user else None
+            topic=request.topic or "",
+            user_id=current_user.id if current_user else ""
         )
         
         # Convert questions to Pydantic models

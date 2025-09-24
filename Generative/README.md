@@ -26,8 +26,10 @@ A comprehensive AI-powered career guidance platform that helps users discover pe
 
 ### 📚 **Educational Resources**
 - **YouTube Integration**: Skill-based video recommendations using YouTube API
+- **Google Books Integration**: Personalized book recommendations for deeper learning
 - **Curated Courses**: Personalized course recommendations
 - **Interactive Roadmaps**: Step-by-step learning paths
+- **Visual Flowcharts**: Beginner-friendly flowchart visualization
 - **Progress Tracking**: Monitor your learning journey
 
 ### 🔧 **Technical Features**
@@ -43,19 +45,23 @@ MARGDARSHAN/
 ├── frontend/                 # React.js Frontend
 │   ├── src/
 │   │   ├── components/      # Reusable UI components
-│   │   ├── pages/          # Main application pages
-│   │   ├── context/        # Global state management
-│   │   ├── services/       # API service layer
-│   │   └── index.css       # Enhanced CSS with animations
-│   ├── public/             # Static assets
-│   └── package.json        # Frontend dependencies
+│   │   ├── pages/           # Main application pages
+│   │   ├── context/         # Global state management
+│   │   ├── services/        # API service layer
+│   │   └── index.css        # Enhanced CSS with animations
+│   ├── public/              # Static assets
+│   └── package.json         # Frontend dependencies
 ├── backend/                 # FastAPI Backend
-│   ├── routes/             # API route handlers
-│   ├── services/           # Business logic services
+│   ├── routes/              # API route handlers
+│   ├── services/            # Business logic services
 │   ├── models/              # Data models and schemas
 │   ├── config/              # Configuration settings
 │   └── main.py              # Application entry point
 ├── requirements.txt         # Python dependencies
+├── docs/                   # Documentation
+│   ├── BEGINNER_FLOWCHART_GUIDE.md  # Beginner's guide to flowcharts
+│   ├── AI_SETUP_INSTRUCTIONS.md     # AI setup instructions
+│   └── ...
 └── README.md               # This file
 ```
 
@@ -92,17 +98,21 @@ MARGDARSHAN/
 
 4. **Set up environment variables**
    ```bash
-   # Create .env file
-   touch .env
+   # Create .env file from the example
+   cp .env.example .env
    
-   # Add the following variables:
-   GOOGLE_GENAI_API_KEY=your_google_generative_ai_api_key
-   GOOGLE_CLOUD_PROJECT=your_project_id
-   HUGGINGFACE_API_KEY=your_huggingface_api_key (optional)
-   GROQ_API_KEY=your_groq_api_key (optional)
+   # Edit the .env file and add your API keys:
+   # GOOGLE_GENAI_API_KEY=your_google_generative_ai_api_key
+   # GOOGLE_CLOUD_PROJECT=your_project_id
+   # HUGGINGFACE_API_KEY=your_huggingface_api_key (optional)
+   # GROQ_API_KEY=your_groq_api_key (optional)
+   # REACT_APP_GOOGLE_BOOKS_API_KEY=your_google_books_api_key (optional)
    ```
 
-5. **Start the backend server**
+5. **Configure AI Services**
+   Follow the detailed instructions in [docs/AI_SETUP_INSTRUCTIONS.md](docs/AI_SETUP_INSTRUCTIONS.md) to properly configure your AI services.
+
+6. **Start the backend server**
    ```bash
    python main.py
    ```
@@ -135,7 +145,8 @@ MARGDARSHAN/
 3. **Get AI Analysis**: Receive personalized career path recommendations
 4. **Explore Resources**: 
    - View career paths with salary ranges and growth prospects
-   - Follow learning roadmaps with YouTube video integration
+   - Follow learning roadmaps with YouTube video and Google Books integration
+   - Visualize your path with interactive flowcharts
    - Discover relevant courses and educational content
 
 ### Example Use Cases
@@ -144,28 +155,28 @@ MARGDARSHAN/
 ```
 Skills: Unity, C#, Game Development, 3D Modeling
 Result: Game Developer, Unity Developer, Technical Artist career paths
-Resources: Unity tutorials, C# programming courses, game design videos
+Resources: Unity tutorials, C# programming courses, game design videos, recommended books
 ```
 
 #### Web Developer Path
 ```
 Skills: React, JavaScript, Node.js, MongoDB
 Result: Full Stack Developer, Frontend Developer, Backend Developer paths
-Resources: React tutorials, JavaScript courses, full-stack project videos
+Resources: React tutorials, JavaScript courses, full-stack project videos, web development books
 ```
 
 #### Data Scientist Path
 ```
 Skills: Python, Machine Learning, TensorFlow, Data Analysis
 Result: Data Scientist, ML Engineer, Data Analyst career paths
-Resources: Python for data science, ML tutorials, statistics courses
+Resources: Python for data science, ML tutorials, statistics courses, data science books
 ```
 
 #### Medical Specialization Path
 ```
 Skills: Pediatrics, Child Development, Family Communication
 Result: Pediatrician, Pediatric Specialist, Neonatologist career paths
-Resources: Pediatrics courses, child psychology videos, medical training resources
+Resources: Pediatrics courses, child psychology videos, medical training resources, medical textbooks
 ```
 
 ## 🔧 Configuration
@@ -193,6 +204,13 @@ The platform uses a custom YouTube search API:
 - **Endpoint**: `https://abhi-api.vercel.app/api/search/yts`
 - **Fallback**: Demo videos when API is unavailable
 - **Search**: Based on user's actual skills for relevant content
+
+### Google Books API Integration
+
+The platform uses the official Google Books API:
+- **Endpoint**: `https://www.googleapis.com/books/v1/volumes`
+- **Fallback**: Demo books when API is unavailable
+- **Search**: Based on user's actual skills for relevant educational content
 
 ## 🎨 Customization
 
@@ -323,6 +341,23 @@ GET /health
 - Verify API keys in .env file
 - Check network connectivity
 - System will fallback to static responses automatically
+- Refer to [docs/AI_SETUP_INSTRUCTIONS.md](docs/AI_SETUP_INSTRUCTIONS.md) for detailed setup instructions
+
+### Testing AI Functionality
+You can test the AI functionality directly using the test script:
+```bash
+python test_ai_functionality.py
+```
+
+## 📚 Documentation
+
+### For Beginners
+- [Beginner's Guide to Flowcharts](docs/BEGINNER_FLOWCHART_GUIDE.md) - Complete guide to understanding and using flowcharts
+- [AI Setup Instructions](docs/AI_SETUP_INSTRUCTIONS.md) - Step-by-step AI configuration guide
+
+### For Developers
+- [API Documentation](http://localhost:8000/docs) - Interactive API documentation
+- [Code Structure](#-architecture) - Project architecture overview
 
 ## 📞 Support
 
@@ -339,6 +374,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - **Google Generative AI** for intelligent career analysis
 - **YouTube API** for educational video integration
+- **Google Books API** for educational content integration
 - **Tailwind CSS** for beautiful, responsive design
 - **FastAPI** for high-performance backend
 - **React** for dynamic user interfaces
