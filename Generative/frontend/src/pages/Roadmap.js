@@ -10,8 +10,12 @@ const Roadmap = () => {
   const [error, setError] = useState(null);
   const [showYouTubeVideos, setShowYouTubeVideos] = useState(false);
   const [showBooks, setShowBooks] = useState(false);
+  const [showCertifications, setShowCertifications] = useState(false);
+  const [showCourses, setShowCourses] = useState(false);
   const [youtubeVideos, setYoutubeVideos] = useState([]);
   const [books, setBooks] = useState([]);
+  const [certifications, setCertifications] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [loadingVideos, setLoadingVideos] = useState(false);
   const [showChatBot, setShowChatBot] = useState(false);
   
@@ -79,6 +83,7 @@ const Roadmap = () => {
   const searchYouTubeVideos = async () => {
     setLoadingVideos(true);
     setShowBooks(false);
+    setShowCertifications(false);
     
     try {
       const searchTerm = currentSkills || 'engineering';
@@ -128,6 +133,7 @@ const Roadmap = () => {
   const searchBooks = async () => {
     setLoadingVideos(true);
     setShowYouTubeVideos(false);
+    setShowCertifications(false);
     
     try {
       const searchTerm = currentSkills || 'engineering';
@@ -169,6 +175,72 @@ const Roadmap = () => {
       // Fallback to demo books
       setBooks(getDemoBooks());
       setShowBooks(true);
+    } finally {
+      setLoadingVideos(false);
+    }
+  };
+
+  // Search certifications based on current skills
+  const searchCertifications = async () => {
+    setLoadingVideos(true);
+    setShowYouTubeVideos(false);
+    setShowBooks(false);
+    setShowCourses(false);
+    
+    try {
+      // Use actual certifications from the roadmap data if available
+      if (roadmapData && roadmapData.certifications && roadmapData.certifications.length > 0) {
+        // Transform backend certifications to match frontend format
+        const transformedCertifications = roadmapData.certifications.map(cert => ({
+          title: cert.name || cert.title,
+          provider: cert.provider,
+          type: cert.type || 'Paid', // Use type from backend or default to Paid
+          description: cert.description,
+          url: cert.url,
+          difficulty: cert.difficulty,
+          duration: cert.duration
+        }));
+        
+        setCertifications(transformedCertifications);
+        setShowCertifications(true);
+      } else {
+        // Fallback to demo certifications if no data from backend
+        const demoCertifications = getDemoCertifications();
+        setCertifications(demoCertifications);
+        setShowCertifications(true);
+      }
+    } catch (error) {
+      console.error('Error fetching certifications:', error);
+      // Fallback to demo certifications
+      setCertifications(getDemoCertifications());
+      setShowCertifications(true);
+    } finally {
+      setLoadingVideos(false);
+    }
+  };
+
+  // Search courses based on current skills
+  const searchCourses = async () => {
+    setLoadingVideos(true);
+    setShowYouTubeVideos(false);
+    setShowBooks(false);
+    setShowCertifications(false);
+    
+    try {
+      // Use actual courses from the roadmap data if available
+      if (roadmapData && roadmapData.courses && roadmapData.courses.length > 0) {
+        setCourses(roadmapData.courses);
+        setShowCourses(true);
+      } else {
+        // Fallback to empty array if no data from backend
+        setCourses([]);
+        setShowCourses(true);
+      }
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+      // Fallback to empty array
+      setCourses([]);
+      setShowCourses(true);
     } finally {
       setLoadingVideos(false);
     }
@@ -230,6 +302,48 @@ const Roadmap = () => {
         url: "#",
         publishedDate: "2023",
         pageCount: "200"
+      }
+    ];
+  };
+
+  // Demo certifications as fallback
+  const getDemoCertifications = () => {
+    return [
+      {
+        title: currentSkills + " Professional Certification",
+        provider: "Certification Institute",
+        type: "Paid",
+        description: "Industry-recognized certification for " + (currentSkills || "Engineering") + " professionals",
+        url: "https://example.com/certification1",
+        difficulty: "Intermediate",
+        duration: "3-6 months"
+      },
+      {
+        title: "Advanced " + (currentSkills || "Engineering") + " Certificate",
+        provider: "Online Learning Platform",
+        type: "Free",
+        description: "Free certification course for advanced " + (currentSkills || "Engineering") + " concepts",
+        url: "https://example.com/certification2",
+        difficulty: "Advanced",
+        duration: "2-4 months"
+      },
+      {
+        title: "Beginner's " + (currentSkills || "Engineering") + " Certification",
+        provider: "Educational Organization",
+        type: "Paid",
+        description: "Entry-level certification for beginners in " + (currentSkills || "Engineering"),
+        url: "https://example.com/certification3",
+        difficulty: "Beginner",
+        duration: "1-3 months"
+      },
+      {
+        title: currentSkills + " Specialization Certificate",
+        provider: "Tech Academy",
+        type: "Free",
+        description: "Free specialization course with certificate in " + (currentSkills || "Engineering"),
+        url: "https://example.com/certification4",
+        difficulty: "Intermediate",
+        duration: "2-3 months"
       }
     ];
   };
@@ -423,6 +537,23 @@ const Roadmap = () => {
                           </>
                         )}
                       </button>
+                      <button
+                        onClick={searchCertifications}
+                        disabled={loadingVideos}
+                        className="bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors duration-200"
+                      >
+                        {loadingVideos ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            <span>Loading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <i className="fas fa-certificate"></i>
+                            <span>Find Certifications</span>
+                          </>
+                        )}
+                      </button>
                     </div>
                   </div>
 
@@ -529,6 +660,62 @@ const Roadmap = () => {
                           className="text-sm text-gray-500 hover:text-gray-700"
                         >
                           Hide Books
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Certifications Section */}
+                  {showCertifications && (
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900 mb-3">📜 Recommended Certifications</h4>
+                      <div className="grid grid-cols-1 gap-4">
+                        {certifications.map((cert, index) => (
+                          <div key={index} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-gray-200">
+                            <div className="p-4">
+                              <div className="flex justify-between items-start mb-2">
+                                <h4 className="text-md font-semibold text-gray-900 line-clamp-2">
+                                  {cert.title || cert.name || 'Certification Title'}
+                                </h4>
+                                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                  cert.type === 'Free' 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : 'bg-blue-100 text-blue-800'
+                                }`}>
+                                  {cert.type || 'Paid'}
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-600 mb-1">
+                                Provider: {cert.provider || 'Unknown Provider'}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                                {cert.description || 'No description available'}
+                              </p>
+                              <div className="flex justify-between text-xs text-gray-400 mt-2">
+                                <span>Difficulty: {cert.difficulty || 'Intermediate'}</span>
+                                <span>Duration: {cert.duration || '3-6 months'}</span>
+                              </div>
+                              <div className="mt-3">
+                                <a 
+                                  href={cert.url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                >
+                                  <i className="fas fa-external-link-alt mr-1"></i>
+                                  View Certification
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="text-center mt-4">
+                        <button
+                          onClick={() => setShowCertifications(false)}
+                          className="text-sm text-gray-500 hover:text-gray-700"
+                        >
+                          Hide Certifications
                         </button>
                       </div>
                     </div>
@@ -689,6 +876,40 @@ const Roadmap = () => {
                           </>
                         )}
                       </button>
+                      <button
+                        onClick={searchCourses}
+                        disabled={loadingVideos}
+                        className="bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-700 hover:to-indigo-800 disabled:from-indigo-400 disabled:to-indigo-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 shadow-md hover:shadow-lg"
+                      >
+                        {loadingVideos ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            <span>Loading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <i className="fas fa-graduation-cap"></i>
+                            <span>Find Courses</span>
+                          </>
+                        )}
+                      </button>
+                      <button
+                        onClick={searchCertifications}
+                        disabled={loadingVideos}
+                        className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 disabled:from-blue-400 disabled:to-blue-500 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-all duration-200 shadow-md hover:shadow-lg"
+                      >
+                        {loadingVideos ? (
+                          <>
+                            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                            <span>Loading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <i className="fas fa-certificate"></i>
+                            <span>Find Certifications</span>
+                          </>
+                        )}
+                      </button>
                     </div>
                   </div>
 
@@ -795,6 +1016,115 @@ const Roadmap = () => {
                           className="text-sm text-gray-500 hover:text-gray-700"
                         >
                           Hide Books
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Certifications Section */}
+                  {showCertifications && (
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900 mb-3">📜 Recommended Certifications</h4>
+                      <div className="grid grid-cols-1 gap-4">
+                        {certifications.map((cert, index) => (
+                          <div key={index} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-gray-200">
+                            <div className="p-4">
+                              <div className="flex justify-between items-start mb-2">
+                                <h4 className="text-md font-semibold text-gray-900 line-clamp-2">
+                                  {cert.title || cert.name || 'Certification Title'}
+                                </h4>
+                                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                  cert.type === 'Free' 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : 'bg-blue-100 text-blue-800'
+                                }`}>
+                                  {cert.type || 'Paid'}
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-600 mb-1">
+                                Provider: {cert.provider || 'Unknown Provider'}
+                              </p>
+                              <p className="text-xs text-gray-500 mt-1 line-clamp-2">
+                                {cert.description || 'No description available'}
+                              </p>
+                              <div className="flex justify-between text-xs text-gray-400 mt-2">
+                                <span>Difficulty: {cert.difficulty || 'Intermediate'}</span>
+                                <span>Duration: {cert.duration || '3-6 months'}</span>
+                              </div>
+                              <div className="mt-3">
+                                <a 
+                                  href={cert.url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                >
+                                  <i className="fas fa-external-link-alt mr-1"></i>
+                                  View Certification
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="text-center mt-4">
+                        <button
+                          onClick={() => setShowCertifications(false)}
+                          className="text-sm text-gray-500 hover:text-gray-700"
+                        >
+                          Hide Certifications
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Courses Section */}
+                  {showCourses && (
+                    <div>
+                      <h4 className="text-lg font-semibold text-gray-900 mb-3">📖 Recommended Courses</h4>
+                      <div className="grid grid-cols-1 gap-4">
+                        {courses.map((course, index) => (
+                          <div key={index} className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-gray-200">
+                            <div className="p-4">
+                              <div className="flex justify-between items-start mb-2">
+                                <h4 className="text-md font-semibold text-gray-900 line-clamp-2">
+                                  {course.title || 'Course Title'}
+                                </h4>
+                                <span className={`px-2 py-1 rounded text-xs font-medium ${
+                                  course.type === 'Free' 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : 'bg-blue-100 text-blue-800'
+                                }`}>
+                                  {course.type || 'Paid'}
+                                </span>
+                              </div>
+                              <p className="text-xs text-gray-600 mb-1">
+                                Provider: {course.provider || 'Unknown Provider'}
+                              </p>
+                              <div className="flex justify-between text-xs text-gray-400 mt-2">
+                                <span>Difficulty: {course.difficulty || 'Intermediate'}</span>
+                                <span>Duration: {course.duration || '3-6 months'}</span>
+                              </div>
+                              <div className="mt-3">
+                                <a 
+                                  href={course.url} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="inline-flex items-center text-blue-600 hover:text-blue-800 text-sm font-medium"
+                                >
+                                  <i className="fas fa-external-link-alt mr-1"></i>
+                                  View Course
+                                </a>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="text-center mt-4">
+                        <button
+                          onClick={() => setShowCourses(false)}
+                          className="text-sm text-gray-500 hover:text-gray-700"
+                        >
+                          Hide Courses
                         </button>
                       </div>
                     </div>

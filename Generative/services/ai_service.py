@@ -1702,6 +1702,7 @@ Remember, every expert was once a beginner. You've got this, and I'm cheering yo
                 'provider': 'YouTube',
                 'duration': f'{int(12*duration_multiplier)} weeks',
                 'difficulty': difficulty_modifier,
+                'type': 'Free',
                 'url': f'https://www.youtube.com/results?search_query={skills.replace(" ", "+")}+course+for+{difficulty_modifier}'
             },
             {
@@ -1709,6 +1710,7 @@ Remember, every expert was once a beginner. You've got this, and I'm cheering yo
                 'provider': 'YouTube',
                 'duration': f'{int(8*duration_multiplier)} weeks',
                 'difficulty': difficulty_modifier,
+                'type': 'Free',
                 'url': f'https://www.youtube.com/results?search_query={skills.replace(" ", "+")}+fundamentals+tutorial'
             },
             {
@@ -1716,6 +1718,7 @@ Remember, every expert was once a beginner. You've got this, and I'm cheering yo
                 'provider': 'YouTube',
                 'duration': f'{int(10*duration_multiplier)} weeks',
                 'difficulty': 'Advanced' if difficulty_modifier != 'Beginner' else 'Intermediate',
+                'type': 'Free',
                 'url': f'https://www.youtube.com/results?search_query=advanced+{skills.replace(" ", "+")}+techniques'
             },
             {
@@ -1723,6 +1726,7 @@ Remember, every expert was once a beginner. You've got this, and I'm cheering yo
                 'provider': 'YouTube',
                 'duration': f'{int(6*duration_multiplier)} weeks',
                 'difficulty': difficulty_modifier,
+                'type': 'Free',
                 'url': f'https://www.youtube.com/results?search_query={skills.replace(" ", "+")}+best+practices'
             },
             {
@@ -1730,37 +1734,269 @@ Remember, every expert was once a beginner. You've got this, and I'm cheering yo
                 'provider': 'YouTube',
                 'duration': f'{int(4*duration_multiplier)} weeks',
                 'difficulty': 'Intermediate' if difficulty_modifier != 'Advanced' else 'Advanced',
+                'type': 'Free',
                 'url': f'https://www.youtube.com/results?search_query={skills.replace(" ", "+")}+certification+preparation'
             }
         ]
         
-        # Personalize certifications based on skills
-        personalized_certifications = [
+        # Add some free courses from other platforms
+        free_platforms = [
             {
-                'name': f'Professional {skills.title()} Certification',
-                'provider': 'Industry Association',
-                'description': f'Demonstrate your expertise in {skills} appropriate for your {expertise} level',
+                'title': f'Introduction to {skills.title()} - Free Course',
+                'provider': 'Coursera',
+                'duration': f'{int(6*duration_multiplier)} weeks',
                 'difficulty': difficulty_modifier,
-                'duration': f'{int(3*duration_multiplier)} months',
-                'url': f'https://certification.example.com/{skills.replace(" ", "-")}'
+                'type': 'Free',
+                'url': f'https://www.coursera.org/search?query={skills.replace(" ", "%20")}'
             },
             {
-                'name': f'{skills.title()} Specialist Certification',
-                'provider': 'Technology Vendor',
-                'description': f'Validate your knowledge of {skills} technologies and best practices',
-                'difficulty': 'Intermediate' if difficulty_modifier != 'Advanced' else 'Advanced',
-                'duration': f'{int(4*duration_multiplier)} months',
-                'url': f'https://vendor.example.com/{skills.replace(" ", "-")}-certification'
+                'title': f'{skills.title()} Fundamentals - Free Specialization',
+                'provider': 'edX',
+                'duration': f'{int(8*duration_multiplier)} weeks',
+                'difficulty': difficulty_modifier,
+                'type': 'Free',
+                'url': f'https://www.edx.org/search?q={skills.replace(" ", "%20")}'
             },
             {
-                'name': f'Advanced {skills.title()} Certification',
-                'provider': 'Professional Institute',
-                'description': f'Prove your advanced skills in {skills} design and implementation',
-                'difficulty': 'Advanced',
-                'duration': f'{int(5*duration_multiplier)} months',
-                'url': f'https://institute.example.com/advanced-{skills.replace(" ", "-")}'
+                'title': f'Learn {skills.title()} - Free Code Camp',
+                'provider': 'FreeCodeCamp',
+                'duration': f'{int(10*duration_multiplier)} weeks',
+                'difficulty': difficulty_modifier,
+                'type': 'Free',
+                'url': f'https://www.freecodecamp.org/learn'
             }
         ]
+        
+        # Combine YouTube courses with other free courses
+        personalized_courses.extend(free_platforms)
+        
+        # Personalize certifications based on skills
+        # Map real certification providers based on user skills
+        skill_based_certifications = {
+            'python': [
+                {
+                    'name': 'Python Institute Certified Associate in Python Programming (PCAP)',
+                    'provider': 'Python Institute',
+                    'description': 'Validate your fundamental knowledge of Python programming',
+                    'difficulty': 'Beginner',
+                    'duration': '3-6 months',
+                    'url': 'https://pythoninstitute.org/certification/pcep-pcp/pcap/'
+                },
+                {
+                    'name': 'Microsoft Certified: Azure Developer Associate',
+                    'provider': 'Microsoft',
+                    'description': 'Demonstrate your expertise in designing, building, testing, and maintaining cloud applications using Azure',
+                    'difficulty': 'Intermediate',
+                    'duration': '3-6 months',
+                    'url': 'https://learn.microsoft.com/en-us/certifications/azure-developer/'
+                },
+                {
+                    'name': 'Google Professional Python Developer',
+                    'provider': 'Google Cloud',
+                    'description': 'Prove your ability to build scalable, highly available, and reliable applications using Python on Google Cloud',
+                    'difficulty': 'Advanced',
+                    'duration': '6-9 months',
+                    'url': 'https://cloud.google.com/certification/cloud-developer'
+                }
+            ],
+            'javascript': [
+                {
+                    'name': 'JavaScript Developer Certification',
+                    'provider': 'W3Schools',
+                    'description': 'Validate your knowledge of JavaScript and web development',
+                    'difficulty': 'Beginner',
+                    'duration': '2-4 months',
+                    'url': 'https://www.w3schools.com/cert/default.asp'
+                },
+                {
+                    'name': 'Front-End Web Developer Certification',
+                    'provider': 'FreeCodeCamp',
+                    'description': 'Demonstrate your skills in HTML, CSS, JavaScript, and front-end frameworks',
+                    'difficulty': 'Intermediate',
+                    'duration': '6-12 months',
+                    'url': 'https://www.freecodecamp.org/'
+                },
+                {
+                    'name': 'React Developer Certification',
+                    'provider': 'HackerRank',
+                    'description': 'Prove your expertise in building user interfaces with React',
+                    'difficulty': 'Intermediate',
+                    'duration': '3-6 months',
+                    'url': 'https://www.hackerrank.com/skills-verification/react_basic'
+                }
+            ],
+            'java': [
+                {
+                    'name': 'Oracle Certified Associate, Java SE Programmer',
+                    'provider': 'Oracle',
+                    'description': 'Validate your fundamental knowledge of Java programming',
+                    'difficulty': 'Beginner',
+                    'duration': '3-6 months',
+                    'url': 'https://education.oracle.com/java-se-11-developer/pexam_1Z0-819'
+                },
+                {
+                    'name': 'Spring Professional Certification',
+                    'provider': 'VMware',
+                    'description': 'Demonstrate your expertise in building applications with Spring Framework',
+                    'difficulty': 'Intermediate',
+                    'duration': '3-6 months',
+                    'url': 'https://tanzu.vmware.com/training/certification/spring-professional-certification'
+                },
+                {
+                    'name': 'Oracle Certified Professional, Java SE Developer',
+                    'provider': 'Oracle',
+                    'description': 'Prove your advanced skills in Java application development',
+                    'difficulty': 'Advanced',
+                    'duration': '6-12 months',
+                    'url': 'https://education.oracle.com/java-se-11-developer/pexam_1Z0-819'
+                }
+            ],
+            'data science': [
+                {
+                    'name': 'IBM Data Science Professional Certificate',
+                    'provider': 'IBM',
+                    'description': 'Begin your journey in data science with IBM tools and technologies',
+                    'difficulty': 'Beginner',
+                    'duration': '3-6 months',
+                    'url': 'https://www.coursera.org/professional-certificates/ibm-data-science'
+                },
+                {
+                    'name': 'Google Data Analytics Professional Certificate',
+                    'provider': 'Google',
+                    'description': 'Learn data analytics foundations and tools used by Google professionals',
+                    'difficulty': 'Intermediate',
+                    'duration': '3-6 months',
+                    'url': 'https://grow.google/dataanalytics/'
+                },
+                {
+                    'name': 'Microsoft Certified: Azure Data Scientist Associate',
+                    'provider': 'Microsoft',
+                    'description': 'Demonstrate your expertise in applying data science and machine learning techniques',
+                    'difficulty': 'Advanced',
+                    'duration': '6-9 months',
+                    'url': 'https://learn.microsoft.com/en-us/certifications/azure-data-scientist/'
+                }
+            ],
+            'aws': [
+                {
+                    'name': 'AWS Certified Cloud Practitioner',
+                    'provider': 'Amazon Web Services',
+                    'description': 'Validate your understanding of AWS Cloud fundamentals',
+                    'difficulty': 'Beginner',
+                    'duration': '3-6 months',
+                    'url': 'https://aws.amazon.com/certification/certified-cloud-practitioner/'
+                },
+                {
+                    'name': 'AWS Certified Solutions Architect – Associate',
+                    'provider': 'Amazon Web Services',
+                    'description': 'Prove your ability to design and deploy scalable systems on AWS',
+                    'difficulty': 'Intermediate',
+                    'duration': '3-6 months',
+                    'url': 'https://aws.amazon.com/certification/certified-solutions-architect-associate/'
+                },
+                {
+                    'name': 'AWS Certified Solutions Architect – Professional',
+                    'provider': 'Amazon Web Services',
+                    'description': 'Demonstrate your expertise in distributed applications and systems on AWS',
+                    'difficulty': 'Advanced',
+                    'duration': '6-12 months',
+                    'url': 'https://aws.amazon.com/certification/certified-solutions-architect-professional/'
+                }
+            ],
+            'cybersecurity': [
+                {
+                    'name': 'CompTIA Security+',
+                    'provider': 'CompTIA',
+                    'description': 'Validate your baseline skills in cybersecurity',
+                    'difficulty': 'Beginner',
+                    'duration': '3-6 months',
+                    'url': 'https://www.comptia.org/certifications/security'
+                },
+                {
+                    'name': 'Certified Ethical Hacker (CEH)',
+                    'provider': 'EC-Council',
+                    'description': 'Demonstrate your knowledge of ethical hacking and penetration testing',
+                    'difficulty': 'Intermediate',
+                    'duration': '3-6 months',
+                    'url': 'https://www.eccouncil.org/programs/certified-ethical-hacker-ceh/'
+                },
+                {
+                    'name': 'Certified Information Systems Security Professional (CISSP)',
+                    'provider': 'ISC2',
+                    'description': 'Prove your expertise in designing and managing cybersecurity programs',
+                    'difficulty': 'Advanced',
+                    'duration': '6-12 months',
+                    'url': 'https://www.isc2.org/Certifications/CISSP'
+                }
+            ],
+            'devops': [
+                {
+                    'name': 'Docker Certified Associate',
+                    'provider': 'Docker',
+                    'description': 'Validate your skills in containerization and Docker technologies',
+                    'difficulty': 'Beginner',
+                    'duration': '2-4 months',
+                    'url': 'https://www.docker.com/certification/'
+                },
+                {
+                    'name': 'Certified Kubernetes Administrator (CKA)',
+                    'provider': 'Cloud Native Computing Foundation',
+                    'description': 'Demonstrate your ability to manage Kubernetes clusters',
+                    'difficulty': 'Intermediate',
+                    'duration': '3-6 months',
+                    'url': 'https://www.cncf.io/certification/cka/'
+                },
+                {
+                    'name': 'HashiCorp Certified: Terraform Associate',
+                    'provider': 'HashiCorp',
+                    'description': 'Prove your expertise in infrastructure as code with Terraform',
+                    'difficulty': 'Intermediate',
+                    'duration': '3-6 months',
+                    'url': 'https://www.hashicorp.com/certification/terraform-associate'
+                }
+            ]
+        }
+        
+        # Get certifications based on skills
+        certifications_list = []
+        skills_lower = skills.lower()
+        
+        # Check for specific skill matches
+        for skill_key, certs in skill_based_certifications.items():
+            if skill_key in skills_lower:
+                certifications_list = certs
+                break
+        
+        # If no specific match found, use generic certifications
+        if not certifications_list:
+            certifications_list = [
+                {
+                    'name': f'{skills.title()} Fundamentals Certification',
+                    'provider': 'Coursera',
+                    'description': f'Build fundamental knowledge in {skills} appropriate for your {expertise} level',
+                    'difficulty': difficulty_modifier,
+                    'duration': f'{int(3*duration_multiplier)} months',
+                    'url': f'https://www.coursera.org/search?query={skills.replace(" ", "%20")}%20certification'
+                },
+                {
+                    'name': f'Professional {skills.title()} Certification',
+                    'provider': 'Udemy',
+                    'description': f'Demonstrate your expertise in {skills} appropriate for your {expertise} level',
+                    'difficulty': 'Intermediate' if difficulty_modifier != 'Advanced' else 'Advanced',
+                    'duration': f'{int(4*duration_multiplier)} months',
+                    'url': f'https://www.udemy.com/courses/search/?q={skills.replace(" ", "%20")}'
+                },
+                {
+                    'name': f'Advanced {skills.title()} Certification',
+                    'provider': 'Pluralsight',
+                    'description': f'Prove your advanced skills in {skills} design and implementation',
+                    'difficulty': 'Advanced',
+                    'duration': f'{int(5*duration_multiplier)} months',
+                    'url': f'https://www.pluralsight.com/search?q={skills.replace(" ", "%20")}'
+                }
+            ]
+        
+        personalized_certifications = certifications_list
         
         return {
             'career_paths': response_data['career_paths'],

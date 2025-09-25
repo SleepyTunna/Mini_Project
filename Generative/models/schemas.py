@@ -31,6 +31,7 @@ class Course(BaseModel):
     duration: str
     difficulty: str
     url: str
+    type: Optional[str] = None
 
 class RoadmapStep(BaseModel):
     """Roadmap step information"""
