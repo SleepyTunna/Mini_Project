@@ -1,0 +1,390 @@
+# MARGDARSHAN - AI-Powered Career Guidance Platform
+## How to Run the Project - Complete Execution Guide for International Users
+
+---
+
+## Table of Contents
+1. Project Overview
+2. System Requirements
+3. Backend Setup and Execution (Server)
+4. Frontend Setup and Execution (User Interface)
+5. Environment Configuration
+6. Accessing the Application
+7. Troubleshooting Common Issues
+8. Key Features and Functionality
+
+---
+
+## 1. Project Overview
+
+Student Compass is an AI-powered career guidance platform that helps users discover personalized career paths, learning roadmaps, and educational resources. The platform is built with modern technologies:
+
+- **Frontend (User Interface)**: React.js with Tailwind CSS
+- **Backend (Server)**: FastAPI (Python) with Google Generative AI integration
+- **Special Features**: Career analysis, learning roadmaps, YouTube/Google Books integration
+
+**Note for International Users**: This guide uses simple English and step-by-step instructions to help users from any country run the project successfully.
+
+---
+
+## 2. System Requirements
+
+### Minimum Requirements:
+- **Operating System**: Windows 10/11, macOS 10.15+, or Ubuntu 18.04+
+- **Python**: Version 3.9 or higher
+- **Node.js**: Version 16.0 or higher
+- **npm**: Version 8.0 or higher
+- **RAM**: 4GB minimum (8GB recommended)
+- **Free Storage Space**: 500MB
+
+### Recommended Specifications:
+- **Python**: 3.10 or higher
+- **Node.js**: 18.0 or higher
+- **RAM**: 8GB or more
+- **Free Storage Space**: 1GB
+
+---
+
+## 3. Backend Setup and Execution Process (Server)
+
+The backend is the "server" part of the application that handles data processing and AI analysis.
+
+### Step 1: Open Terminal/Command Prompt
+- **Windows**: Press Windows Key + R, type "cmd", press Enter
+- **macOS**: Open Terminal from Applications > Utilities
+- **Linux**: Open Terminal from your applications menu
+
+### Step 2: Navigate to Project Folder
+```bash
+cd d:\Generative_Ai\Generative
+```
+
+### Step 3: Check if Virtual Environment Exists
+Look for a folder named `.venv` in the project directory. If it doesn't exist, create one:
+```bash
+python -m venv .venv
+```
+
+### Step 4: Activate Virtual Environment
+```bash
+# Windows
+.venv\Scripts\activate
+
+# macOS/Linux
+source .venv/bin/activate
+```
+
+You should see `(.venv)` at the beginning of your command line.
+
+### Step 5: Install Python Dependencies
+```bash
+pip install -r requirements.txt
+```
+
+This installs all required Python packages for the backend.
+
+### Step 6: Configure Environment Variables (Important for AI Features)
+Create a `.env` file by copying the example:
+```bash
+# Windows
+copy .env.example .env
+
+# macOS/Linux
+cp .env.example .env
+```
+
+Open the `.env` file in a text editor and add your API keys:
+```
+GOOGLE_GENAI_API_KEY=your_google_gemini_api_key_here
+SECRET_KEY=your_secret_key_here
+```
+
+### Step 7: Start the Backend Server
+```bash
+python main.py
+```
+
+### Backend Execution Details:
+- **Server Technology**: Uvicorn (FastAPI)
+- **Default Port**: 8000
+- **Server Address**: http://localhost:8000
+- **API Documentation**: http://localhost:8000/docs
+
+### What Happens During Backend Startup:
+1. Loads environment variables from `.env` file
+2. Initializes FastAPI application
+3. Configures Cross-Origin Resource Sharing (CORS) for web browser access
+4. Sets up all API endpoints (routes)
+5. Starts server and waits for requests on port 8000
+
+**Keep this terminal window open while using the application.**
+
+---
+
+## 4. Frontend Setup and Execution Process (User Interface)
+
+The frontend is what users see in their web browser - the visual interface.
+
+### Step 1: Open a New Terminal/Command Prompt Window
+(Don't close the backend terminal)
+
+### Step 2: Navigate to Frontend Folder
+```bash
+cd d:\Generative_Ai\Generative\frontend
+```
+
+### Step 3: Install Node.js Dependencies
+```bash
+npm install
+```
+
+This downloads all required packages for the user interface. It may take 2-5 minutes.
+
+### Step 4: Start Development Server
+You can use either method:
+
+**Method 1 (Recommended)**:
+```bash
+npm start
+```
+
+**Method 2 (Alternative)**:
+```bash
+npx react-scripts start
+```
+
+### Frontend Execution Details:
+- **Framework**: React.js
+- **Default Port**: 3000
+- **User Access URL**: http://localhost:3000
+- **Development Tool**: Webpack with hot reloading
+
+### What Happens During Frontend Startup:
+1. Compiles React application code
+2. Sets up development web server
+3. Enables automatic refresh when code changes
+4. Makes application available in web browser at http://localhost:3000
+
+**Keep this terminal window open while using the application.**
+
+---
+
+## 5. Environment Configuration
+
+### Required Environment Variables:
+Create or edit the `.env` file in the main project folder (`d:\Generative_Ai\Generative\.env`):
+
+```
+# Google Generative AI (Gemini) - Required for AI features
+GOOGLE_GENAI_API_KEY=your_google_gemini_api_key_here
+
+# Authentication
+SECRET_KEY=your_secret_key_here_generate_a_strong_random_key
+```
+
+### Optional Environment Variables:
+```
+# Development Settings
+DEBUG=true
+LOG_LEVEL=INFO
+```
+
+### For International Users - Getting API Keys:
+1. Visit https://ai.google.dev/
+2. Sign in with your Google account
+3. Create a new API key
+4. Copy the key and paste it in your `.env` file
+
+---
+
+## 6. Accessing the Application
+
+### URLs After Successful Startup:
+1. **Backend API Server**: http://localhost:8000
+2. **API Documentation**: http://localhost:8000/docs
+3. **User Interface**: http://localhost:3000
+
+### First-Time Usage Instructions:
+1. Open your web browser (Chrome, Firefox, Edge, Safari)
+2. Go to http://localhost:3000
+3. You will see the MARGDARSHAN homepage
+4. Enter your skills (e.g., "Python, React, JavaScript")
+5. Select your expertise level (Beginner, Intermediate, Advanced, Expert)
+6. Click "Analyze Career Path"
+7. Explore the personalized recommendations
+
+### Key Pages in the Application:
+- **Homepage**: Enter skills and expertise level
+- **Career Path**: AI-generated career recommendations
+- **Roadmap**: Step-by-step learning path
+- **Flowchart**: Visual learning journey
+- **AI Chatbot**: Interactive career guidance
+
+---
+
+## 7. Troubleshooting Common Issues
+
+### Backend Issues:
+
+**Problem**: "Module not found" or "ImportError" messages
+**Solution**: 
+```bash
+pip install -r requirements.txt
+```
+
+**Problem**: "Port already in use" error
+**Solution**: 
+- Close other applications using port 8000
+- Or change port in `config/settings.py`
+
+**Problem**: AI services not working
+**Solution**: 
+- Verify API keys in `.env` file
+- Check internet connection
+
+### Frontend Issues:
+
+**Problem**: "npm install" fails or takes too long
+**Solution**:
+```bash
+npm cache clean --force
+# Delete node_modules folder and package-lock.json file
+npm install
+```
+
+**Problem**: Development server won't start
+**Solution**:
+```bash
+npm start
+```
+
+**Problem**: Blank page or "localhost refused to connect"
+**Solution**:
+1. Check if backend server is running (terminal should show "Uvicorn running on http://0.0.0.0:8000")
+2. Check if frontend server is running (terminal should show "Local: http://localhost:3000")
+3. Try refreshing the browser
+
+### Testing if Services are Working:
+
+**Test Backend Health**:
+Open a new terminal and run:
+```bash
+curl http://localhost:8000/health
+```
+You should see a response about the server status.
+
+**Test API Connection**:
+```bash
+curl -X POST http://localhost:8000/analyze \
+  -H "Content-Type: application/json" \
+  -d '{"skills": "Python", "expertise": "Beginner"}'
+```
+
+---
+
+## 8. Key Features and Functionality
+
+### AI-Powered Career Analysis:
+- Personalized career path recommendations based on your skills
+- Skill gap analysis to identify what to learn next
+- Salary range predictions for different career paths
+- Growth prospect insights for long-term planning
+
+### Learning Resources Integration:
+- **YouTube Integration**: Skill-based educational video recommendations
+- **Google Books Integration**: Relevant book suggestions for deeper learning
+- **Course Recommendations**: Platform-specific learning paths
+
+### Interactive Components:
+- **Visual Roadmaps**: Step-by-step learning paths with timelines
+- **Flowcharts**: Interactive visual representation of your learning journey
+- **Progress Tracking**: Mark completed steps and track your progress
+- **AI Chatbot**: Conversational career guidance that answers questions
+
+### Multi-Domain Support:
+- Software Development (supports 200+ programming languages and frameworks)
+- Data Science and Artificial Intelligence
+- Game Development
+- Mobile Development
+- DevOps and Cloud Computing
+- Cybersecurity
+- Medical Specializations (12 medical domains covered)
+
+### User Experience Features:
+- Responsive design that works on phones, tablets, and computers
+- Modern UI with smooth animations and transitions
+- Context-aware AI responses that adapt to your skill level
+- Easy-to-use interface designed for learners of all levels
+
+---
+
+## Quick Reference Commands
+
+### Start Backend Server:
+```bash
+cd d:\Generative_Ai\Generative
+.venv\Scripts\activate  # Windows
+# OR source .venv/bin/activate  # macOS/Linux
+python main.py
+```
+
+### Start Frontend Interface:
+```bash
+cd d:\Generative_Ai\Generative\frontend
+npm install  # Run only first time
+npm start
+```
+
+### URLs to Access:
+- **User Interface**: http://localhost:3000
+- **Backend API**: http://localhost:8000
+- **API Docs**: http://localhost:8000/docs
+
+---
+
+## For Developers and Advanced Users
+
+### Project Structure:
+```
+MARGDARSHAN/
+├── Generative/              # Main project folder
+│   ├── main.py             # Backend entry point
+│   ├── config/             # Configuration files
+│   ├── routes/             # API endpoints
+│   ├── services/           # Business logic
+│   ├── models/             # Data models
+│   ├── requirements.txt    # Python dependencies
+│   └── .env                # Environment variables
+├── frontend/               # User interface
+│   ├── src/                # Source code
+│   ├── package.json        # Node.js dependencies
+│   └── public/             # Static files
+└── docs/                  # Documentation
+```
+
+### Running Tests:
+**Backend Tests**:
+```bash
+cd d:\Generative_Ai\Generative
+pytest
+```
+
+**Frontend Tests**:
+```bash
+cd d:\Generative_Ai\Generative\frontend
+npm test
+```
+
+---
+
+## Contact and Support
+
+For issues, questions, or contributions:
+- Check the project documentation in the `docs/` folder
+- Review terminal logs for detailed error messages
+- Visit the GitHub repository for community support
+
+---
+
+*Built with ❤️ for career growth and learning worldwide*
+*MARGDARSHAN - Your guide to a successful career in technology and medicine*
