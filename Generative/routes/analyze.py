@@ -5,8 +5,6 @@ from dependencies import get_current_user
 from typing import Optional
 
 router = APIRouter(tags=["analyze"])
-# Move AIService initialization inside the function to ensure proper environment loading
-# ai_service = AIService()  # This line will be removed
 
 @router.post("/analyze", response_model=AnalyzeResponse)
 async def analyze_career_paths(
@@ -31,7 +29,7 @@ async def analyze_career_paths(
                 detail="Skills and expertise are required. Please provide them in the request or update your profile."
             )
         
-        # Generate analysis using Vertex AI
+        # Generate analysis using AI service
         analysis = ai_service.generate_career_analysis(skills, expertise)
         
         # Convert to Pydantic models
@@ -40,6 +38,12 @@ async def analyze_career_paths(
         roadmap = [RoadmapStep(**step) for step in analysis["roadmap"]]
         courses = [Course(**course) for course in analysis["courses"]]
         certifications = [Certification(**cert) for cert in analysis.get("certifications", [])]
+        
+        # Ensure all certifications have proper URLs
+        for cert in certifications:
+            if not cert.url or cert.url == "":
+                # Provide a default search URL if no specific URL is provided
+                cert.url = f"https://www.google.com/search?q={cert.name.replace(' ', '+')}+certification+{cert.provider.replace(' ', '+')}"
         
         return AnalyzeResponse(
             career_paths=career_paths,

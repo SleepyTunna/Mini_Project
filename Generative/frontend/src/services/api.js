@@ -31,7 +31,7 @@ tokenManager.initializeToken();
 
 // Create axios instance with base configuration
 const api = axios.create({
-  baseURL: 'http://localhost:8000', // Fixed to correct port 8000
+  baseURL: 'http://localhost:8001', // Updated to new port 8001
   timeout: 30000, // 30 seconds timeout for AI requests
   headers: {
     'Content-Type': 'application/json',

@@ -184,6 +184,20 @@ const Flowchart = () => {
                             </span>
                           </div>
                           <p className="text-sm text-gray-600 mt-2">{step.description}</p>
+                          
+                          {step.resources && step.resources.length > 0 && (
+                            <div className="mt-3">
+                              <h4 className="text-xs font-medium text-gray-700 mb-1">Resources:</h4>
+                              <ul className="text-xs text-gray-600 space-y-1">
+                                {step.resources.map((resource, resIndex) => (
+                                  <li key={resIndex} className="flex items-start">
+                                    <i className="fas fa-circle text-gray-400 text-xs mt-1 mr-2"></i>
+                                    <span>{resource}</span>
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -226,6 +240,34 @@ const Flowchart = () => {
                 </div>
               )}
             </div>
+            
+            {/* Display certifications if available */}
+            {roadmapData.certifications && roadmapData.certifications.length > 0 && (
+              <div className="bg-white rounded-lg shadow p-6 mt-8">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">Recommended Certifications</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {roadmapData.certifications.map((cert, index) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <h3 className="font-medium text-gray-900">{cert.name}</h3>
+                      <p className="text-sm text-gray-600 mt-1">{cert.provider}</p>
+                      <p className="text-xs text-gray-500 mt-2">{cert.description}</p>
+                      <div className="flex justify-between items-center mt-3">
+                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                          {cert.difficulty}
+                        </span>
+                        <span className="text-xs text-gray-500">{cert.duration}</span>
+                      </div>
+                      <button 
+                        onClick={() => window.open(cert.url, '_blank')}
+                        className="mt-3 w-full text-center text-sm bg-indigo-600 text-white py-1 rounded hover:bg-indigo-700 transition-colors"
+                      >
+                        View Certification
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ) : null}
       </div>

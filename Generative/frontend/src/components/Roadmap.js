@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAppContext } from '../context/AppContext';
 import { useNavigate } from 'react-router-dom';
 import { careerAPI } from '../services/api';
+import TourGuide from './TourGuide';
 
 const Roadmap = () => {
   const [showYouTubeVideos, setShowYouTubeVideos] = useState(false);
@@ -646,6 +647,12 @@ const Roadmap = () => {
           </div>
         )}
         
+        {/* Tour Guide Section */}
+        <div className="mb-12">
+          <h3 className="text-2xl font-bold mb-6 text-gray-800 professional-heading">Personalized Tour Guide</h3>
+          <TourGuide />
+        </div>
+        
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {roadmapSteps.map((step, index) => (
             <div 
@@ -863,6 +870,47 @@ const Roadmap = () => {
                 Hide Books
               </button>
             </div>
+          </div>
+        )}
+        
+        {/* Certifications Section */}
+        {!loading && (
+          <div className="mb-12">
+            <h3 className="text-2xl font-bold mb-6 text-gray-800 professional-heading">Recommended Certifications</h3>
+            {courses && courses.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {courses.map((course, index) => (
+                  <div key={index} className="bg-white rounded-lg shadow-md p-6 border border-gray-200 hover:shadow-lg transition-shadow duration-300">
+                    <div className="flex justify-between items-start mb-3">
+                      <h4 className="text-lg font-semibold text-gray-800">{course.title}</h4>
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        {course.difficulty}
+                      </span>
+                    </div>
+                    <p className="text-gray-600 text-sm mb-2">Provider: {course.provider}</p>
+                    <p className="text-gray-500 text-xs mb-4">Duration: {course.duration}</p>
+                    <a 
+                      href={course.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="inline-block w-full text-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200 text-sm"
+                    >
+                      View Certification
+                    </a>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg shadow p-6 text-center">
+                <p className="text-gray-600">No certifications available at the moment.</p>
+                <button 
+                  onClick={() => window.open('https://www.coursera.org/search?query=' + (currentSkills || 'certification'), '_blank')}
+                  className="mt-4 px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                >
+                  Search Certifications
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

@@ -53,81 +53,6 @@ const AIChatBot = () => {
     }
   };
 
-  // Function to generate varied responses based on context
-  const generateVariedResponse = (userInput, aiResponse) => {
-    // If we have a valid AI response, use it
-    if (aiResponse && aiResponse.reply) {
-      return aiResponse.reply;
-    }
-    
-    if (aiResponse && aiResponse.bot_message) {
-      return aiResponse.bot_message;
-    }
-    
-    // Generate context-aware responses based on user input
-    const lowerInput = userInput.toLowerCase();
-    
-    // Responses for different types of queries
-    if (lowerInput.includes('roadmap') || lowerInput.includes('path') || lowerInput.includes('journey')) {
-      const roadmapResponses = [
-        "I'd be happy to help you understand your career roadmap! Based on your skills and expertise, I can guide you through each step of your learning journey. What specific aspect of your roadmap would you like to discuss?",
-        "Your personalized roadmap is designed to take you from your current level to your career goals. Each step builds on the previous one. Would you like me to explain any particular stage in more detail?",
-        "The roadmap I've created for you is a step-by-step guide to mastering your chosen field. It's structured to ensure you build a solid foundation before moving to advanced topics. Which step are you currently on?"
-      ];
-      return roadmapResponses[Math.floor(Math.random() * roadmapResponses.length)];
-    }
-    
-    if (lowerInput.includes('skill') || lowerInput.includes('learn') || lowerInput.includes('study')) {
-      const skillResponses = [
-        "Learning new skills is essential for career growth! Based on your current expertise level, I can suggest the best resources and learning paths. What specific skill would you like to develop?",
-        "I'm here to guide you through skill development! Whether you're a beginner or looking to advance, I can recommend tailored learning resources. What area would you like to focus on?",
-        "Skill development is a continuous journey. I can help you identify gaps in your knowledge and suggest targeted learning materials. What would you like to learn more about?"
-      ];
-      return skillResponses[Math.floor(Math.random() * skillResponses.length)];
-    }
-    
-    if (lowerInput.includes('resource') || lowerInput.includes('book') || lowerInput.includes('video')) {
-      const resourceResponses = [
-        "I can recommend excellent learning resources tailored to your field! From books to online courses, I'll help you find the best materials. What type of resource are you looking for?",
-        "Finding the right learning resources is crucial for effective studying. I can suggest books, videos, and courses that match your learning style. What would you prefer to explore?",
-        "There are many great resources available for your field of interest. I can help you discover the most relevant and up-to-date materials. What format works best for your learning?"
-      ];
-      return resourceResponses[Math.floor(Math.random() * resourceResponses.length)];
-    }
-    
-    if (lowerInput.includes('hello') || lowerInput.includes('hi') || lowerInput.includes('hey')) {
-      const greetingResponses = [
-        "Hello there! I'm your TourGuide, ready to assist with your career journey. How can I help you today?",
-        "Hi! I'm here to guide you through your career development. What questions do you have for me?",
-        "Hey! I'm your personal career assistant. Let's explore your learning path together - what would you like to know?"
-      ];
-      return greetingResponses[Math.floor(Math.random() * greetingResponses.length)];
-    }
-    
-    if (lowerInput.includes('thank')) {
-      const thankResponses = [
-        "You're very welcome! I'm here to support your career journey anytime you need guidance.",
-        "Happy to help! Feel free to ask me anything else about your learning path.",
-        "My pleasure! I'm always here when you need career guidance."
-      ];
-      return thankResponses[Math.floor(Math.random() * thankResponses.length)];
-    }
-    
-    // Default varied responses
-    const defaultResponses = [
-      "I'm here to help guide your career journey! Based on your skills and interests, I can provide personalized advice. What specific questions do you have?",
-      "As your TourGuide, I'm equipped to help you navigate your career path. What aspect would you like to explore further?",
-      "I understand you're on a learning journey, and I'm here to support you. What challenges are you currently facing?",
-      "Your career development is unique, and I'm here to provide tailored guidance. What goals are you working toward?",
-      "I'm designed to help with career planning and skill development. What would you like to focus on today?",
-      "Let's work together to advance your career! What specific area would you like guidance on?",
-      "I'm your personal career assistant, ready to help you succeed. What can I assist you with?",
-      "Every career journey is different, and I'm here to provide personalized support. What would you like to discuss?"
-    ];
-    
-    return defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
-  };
-
   const handleSend = async () => {
     if (!inputValue.trim() || isLoading) return;
 
@@ -182,16 +107,15 @@ const AIChatBot = () => {
             response = null;
           }
           
-          const variedResponse = generateVariedResponse(inputValue, response);
           const aiMessage = {
             id: Date.now() + 1,
-            text: variedResponse,
+            text: response?.bot_message || "I'm here to help guide your career journey! Based on your skills and interests, I can provide personalized advice. What specific questions do you have?",
             sender: 'ai',
             timestamp: new Date()
           };
           
           setMessages(prev => [...prev, aiMessage]);
-          setConversationHistory(prev => [...prev, { role: 'assistant', content: variedResponse }]);
+          setConversationHistory(prev => [...prev, { role: 'assistant', content: aiMessage.text }]);
         }
       } else {
         // For non-book queries, use the normal AI response
@@ -203,16 +127,15 @@ const AIChatBot = () => {
           response = null;
         }
         
-        const variedResponse = generateVariedResponse(inputValue, response);
         const aiMessage = {
           id: Date.now() + 1,
-          text: variedResponse,
+          text: response?.bot_message || "I'm here to help guide your career journey! Based on your skills and interests, I can provide personalized advice. What specific questions do you have?",
           sender: 'ai',
           timestamp: new Date()
         };
         
         setMessages(prev => [...prev, aiMessage]);
-        setConversationHistory(prev => [...prev, { role: 'assistant', content: variedResponse }]);
+        setConversationHistory(prev => [...prev, { role: 'assistant', content: aiMessage.text }]);
       }
     } catch (error) {
       console.error('Chat error:', error);
